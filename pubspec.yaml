@@ -1,0 +1,50 @@
+name: jing_hong_v4
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  go_router: ^15.1.1
+  provider: ^6.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/home.png
+    - assets/images/chat.png
+    - assets/images/about.png
+    - assets/images/avatar.png
+    - assets/images/avatar-small.png
+    - assets/images/born.jpg
+    - assets/images/highschool.jpg
+    - assets/images/university.jpg
+    - assets/images/guangzhou.jpg
+    - assets/images/chengdu.jpg
+    - assets/images/now.jpg
+    - assets/images/study.jpg
+    - assets/images/millstone.png
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Light.ttf
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
+        - asset: assets/fonts/Poppins-Bold.ttf
+          style: normal
+    - family: SourceHanSansSc
+      fonts:
+        - asset: assets/fonts/SourceHanSansSc-Regular.otf
+        - asset: assets/fonts/SourceHanSansSc-Light.otf
+        - asset: assets/fonts/SourceHanSansSc-Heavy.otf
+        - asset: assets/fonts/SourceHanSansSc-Bold.otf
+          style: normal
