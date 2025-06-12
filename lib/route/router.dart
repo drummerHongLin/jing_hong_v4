@@ -7,6 +7,7 @@ import 'package:jing_hong_v4/data/local/route/data.dart' show navInfo;
 import 'package:jing_hong_v4/ui/home/home_screen.dart';
 import 'package:jing_hong_v4/ui/login/login_screen.dart';
 import 'package:jing_hong_v4/ui/shell/custom_shell.dart';
+import 'package:provider/provider.dart';
 
 // 用于弹出额外信息卡
 CustomTransitionPage popPage(LocalKey key, Widget poppedScreen){
@@ -36,7 +37,7 @@ GoRouter router() => GoRouter(
                 builder: (context, state) {
                   return switch (n.path) {
                     "/home" => HomeScreen(),
-                    "/chat" => ChatScreen(),
+                    "/chat" => ChatScreen(viewmodel: context.read(),),
                     "/about" => AboutScreen(),
                     _ => HomeScreen(),
                   };

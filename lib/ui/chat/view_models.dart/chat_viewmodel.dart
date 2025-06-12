@@ -1,0 +1,222 @@
+// 主要是加载动作的状态记录
+// 控制界面的加载遮挡
+// 提供界面的当前session和model的值变动提示
+
+import 'dart:math' show min;
+
+import 'package:flutter/material.dart';
+import 'package:jing_hong_v4/data/local/chat/basic_info.dart';
+import 'package:jing_hong_v4/data/local/chat/chat_model.dart';
+import 'package:jing_hong_v4/data/model/chat/chat_model.dart';
+import 'package:jing_hong_v4/data/model/chat/message.dart';
+import 'package:jing_hong_v4/data/model/chat/session.dart';
+import 'package:jing_hong_v4/data/remote/chat/chat_repo.dart';
+import 'package:jing_hong_v4/ui/chat/view_models.dart/message_viewmodel.dart';
+import 'package:jing_hong_v4/utils/command.dart';
+import 'package:jing_hong_v4/utils/msg_notifier.dart';
+import 'package:jing_hong_v4/utils/result.dart';
+import 'package:async/async.dart' show CancelableOperation;
+
+class ChatViewmodel extends ChangeNotifier {
+  // 数据来源提供
+  final ChatRepo _chatRepo;
+  // 耗时操作命令，加载历史消息和历史会话
+  late Command1<void, Session> loadMessages;
+  late Command1<void, ChatModel> loadSessions;
+
+  ChatViewmodel({required ChatRepo chatRepo}) : _chatRepo = chatRepo {
+    loadMessages = Command1(_loadMessages);
+    loadSessions = Command1(_loadSessions);
+  }
+
+  // 用于进行消息提示
+  MsgNotifier msgNotifier = MsgNotifier();
+
+  // 这一部分的核心状态是当前选择的模型和当前的会话
+
+  Session? _currentSession;
+  Session? get currentSession => _currentSession;
+  set currentSession(Session? s) {
+    _currentSession = s;
+    notifyListeners();
+  }
+
+  ChatModel _currentModel = chatModels[0];
+  ChatModel get currentModel => _currentModel;
+  set currentModel(ChatModel model){
+    _currentModel = model;
+    notifyListeners();
+  }
+
+
+  List<Session> modelSessions = [];
+
+  final MessageViewmodel _messageViewmodel = MessageViewmodel();
+  MessageViewmodel get messageViewmodel => _messageViewmodel;
+
+  CancelableOperation<Result<Message>>? _apiOperation;
+
+  // 相关的操作
+  // 1. 创建会话 - 根据新的title创建新会话，并将数据信息保存到数据库；
+  // 2. 保存消息 - ready消息排除，消息加入历史消息列表，并将数据信息保存到数据库;
+  // 3. 处理缓存消息 - 停止打印缓存消息，保存缓存消息；
+  // 4. 发送消息 - 设置缓存消息为ready消息， 通过历史消息列表向服务器请求数据，请求完成后，返回的消息设置成缓存消息 ；
+  // 5. 停止消息 - 如果消息在running状态，则停止打印； 如果消息是ready状态，停止api请求，设置缓存消息为手动停止消息；
+  // 6. 手动发送消息 - 处理缓存消息，保存发送消息，发送消息；
+  // 7. 重试发送消息 - 直接发送消息；
+  // 8. 加载历史消息 - 在repo获取历史消息的基础上，增加错误消息的展示处理， 设置历史对话列表为获取到的历史消息数据；
+  // 9. 切换会话 - 停止消息，处理缓存消息，
+  //      选择session为空的话，历史消息设置为emptyList,缓存消息设置为空
+  //      切换currentSession为选择的session，加载历史消息，
+  //             - 如果历史消息最后一个是用户消息，那么发送消息；
+  //             - 如果历史消息最后一个是running状态，那么重新打印消息；
+  // 10. 加载历史会话 - 在repo获取历史消息的基础上，增加错误消息的展示处理， 设置会话列表为获取到的历史消息数据；
+  // 11. 切换模型 - 加载历史会话，切换会话为空会话；
+
+  // 1. 创建会话
+  Future<void> createSession(String? title) async {
+    final newSession = Session(
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: title ?? '新建会话',
+      model: _currentModel.name,
+    );
+
+    modelSessions.add(newSession);
+    currentSession = newSession;
+
+    final rst = await _chatRepo.saveSession(currentSession!);
+    if (rst is Failure) msgNotifier.msg = rst.message;
+    return;
+  }
+
+  // 2. 保存消息
+  Future<void> saveMessage(Message message) async {
+    if (message.state != MsState.ready) {
+      _messageViewmodel.addMessage(message);
+      final rst = await _chatRepo.saveMessage(message);
+      if (rst is Failure) msgNotifier.msg = rst.message;
+    }
+    return;
+  }
+
+  // 3. 处理缓存消息
+  Future<void> handleCachedMessage() async {
+    if (_messageViewmodel.cachedMessage != null) {
+      _messageViewmodel.stopType();
+      await saveMessage(_messageViewmodel.cachedMessage!);
+    }
+    return;
+  }
+
+  // 4. 发送消息 异步请求包在CancelableOperation中
+  void sendMessage() {
+    assert(currentSession != null);
+    assert(_messageViewmodel.sendedMessages.isNotEmpty);
+    final lastSendedMessage = _messageViewmodel.sendedMessages.last;
+    _messageViewmodel.setCachedMessage(Message.ready(currentSession!.id));
+    _apiOperation = CancelableOperation<Result<Message>>.fromFuture(
+      _chatRepo.getMessageFromApi(
+        _messageViewmodel.sendedMessages,
+        _currentModel,
+      ),
+      onCancel: () {
+        _messageViewmodel.setCachedMessage(
+          Message.manuallyStopped(
+            lastSendedMessage.sendTime,
+            lastSendedMessage.sId,
+          ),
+        );
+        msgNotifier.msg = "网络请求被中止！";
+      },
+    );
+    _apiOperation!.value.then((r) {
+      r.when(
+        success: (r) => _messageViewmodel.typeMessage(r),
+        failure: (msg, err) {
+          msgNotifier.msg = err.toString();
+        },
+      );
+    });
+  }
+
+  // 5. 停止消息
+  void stopSendMessage() {
+    _apiOperation?.cancel();
+    _messageViewmodel.stopType();
+  }
+
+  // 6. 手动发送消息
+  Future<void> sendMessageManually(String message) async {
+    final sendTime = DateTime.now().toIso8601String();
+    if (currentSession == null) {
+      createSession(message.substring(0, min(message.length, 10)));
+    }
+    final messageToSend = Message(
+      id: DateTime.now().millisecondsSinceEpoch,
+      mId: _messageViewmodel.sendedMessages.length,
+      content: message,
+      role: Role.user,
+      state: MsState.completed,
+      showingContent: message,
+      sendTime: sendTime,
+      sId: currentSession!.id,
+    );
+    await handleCachedMessage();
+    await saveMessage(messageToSend);
+    sendMessage();
+  }
+
+  // 7. 重新发送消息
+  void resendMessage() {
+    sendMessage();
+  }
+
+  // 8. 加载历史消息
+  Future<Result<void>> _loadMessages(Session session) async {
+    final rst = await _chatRepo.getHisMessagesBySession(session);
+    rst.when(
+      success: (msgs) {
+        final signal = _messageViewmodel.setSendedMessages(msgs);
+        switch (signal) {
+          case true:
+            // 判断是否最后一条消息是用户发出
+            resendMessage();
+          default:
+            break;
+        }
+      },
+      failure: (msg, err) => msgNotifier.msg = msg + err.toString(),
+    );
+    return rst;
+  }
+
+  // 9. 切换会话
+  Future<void> switchSession(Session? session) async {
+    stopSendMessage();
+    await handleCachedMessage();
+    if (session != null) {
+      loadMessages.execute(session);
+    } else {
+      _messageViewmodel.clearMessage();
+    }
+    currentSession = session;
+  }
+
+  // 10. 加载历史会话
+  Future<Result<void>> _loadSessions(ChatModel model) async {
+    final rst = await _chatRepo.getHisSessionByModel(model);
+    rst.when(
+      success: (msgs) {
+        modelSessions = msgs;
+      },
+      failure: (msg, err) => msgNotifier.msg = msg + err.toString(),
+    );
+    return rst;
+  }
+
+  // 11. 切换模型
+  Future<void> switchModel(ChatModel model) async {
+      await switchSession(null);
+      loadSessions.execute(model);
+  }
+}

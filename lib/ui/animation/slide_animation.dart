@@ -44,12 +44,12 @@ List<Widget> generateSlideGroup(
 ) {
   assert(children.isNotEmpty, "至少需要一个运动组件");
   final l = children.length;
-  List<Widget> _slideAnimations = [];
+  List<Widget> slideAnimations = [];
   final totalDuration = Duration(
     milliseconds: (children.length - 1) * delayMillseconds + runMillseconds,
   );
   for (int i = 0; i < l; i++) {
-    _slideAnimations.add(
+    slideAnimations.add(
       SlideAnimation(
         begin: begin,
         end: end,
@@ -65,5 +65,5 @@ List<Widget> generateSlideGroup(
       ),
     );
   }
-  return _slideAnimations;
+  return slideAnimations;
 }

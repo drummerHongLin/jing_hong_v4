@@ -7,15 +7,26 @@ environment:
   sdk: ^3.7.2
 
 dependencies:
+  async: ^2.12.0
+  dio: ^5.8.0+1
   flutter:
     sdk: flutter
+  flutter_svg: ^2.1.0
+  freezed_annotation: ^3.0.0
   go_router: ^15.1.1
+  json_annotation: ^4.9.0
+  path: ^1.9.1
   provider: ^6.1.5
+  sqflite: ^2.4.2
+  sqflite_common_ffi_web: ^1.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  freezed: ^3.0.6
+  json_serializable: ^6.9.5
 
 flutter:
   uses-material-design: true
@@ -33,6 +44,8 @@ flutter:
     - assets/images/now.jpg
     - assets/images/study.jpg
     - assets/images/millstone.png
+    - assets/images/kimi.svg
+    - assets/images/deepseek.png
   fonts:
     - family: Poppins
       fonts:
