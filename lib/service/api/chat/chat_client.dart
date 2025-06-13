@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:jing_hong_v4/data/local/chat/chat_model.dart';
+import 'package:jing_hong_v4/data/data/chat/local/chat_model.dart';
 import 'package:jing_hong_v4/service/api/chat/model/chat_api_data.dart';
 
 class ChapClient {

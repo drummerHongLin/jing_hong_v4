@@ -1,4 +1,4 @@
-import 'package:jing_hong_v4/data/local/chat/basic_info.dart';
+import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
 
 class Message {
   final int id;

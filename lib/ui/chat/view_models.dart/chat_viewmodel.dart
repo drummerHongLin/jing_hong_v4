@@ -2,31 +2,34 @@
 // 控制界面的加载遮挡
 // 提供界面的当前session和model的值变动提示
 
+import 'dart:async';
 import 'dart:math' show min;
 
+import 'package:async/async.dart' show CancelableOperation;
 import 'package:flutter/material.dart';
-import 'package:jing_hong_v4/data/local/chat/basic_info.dart';
-import 'package:jing_hong_v4/data/local/chat/chat_model.dart';
+import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
+import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
+import 'package:jing_hong_v4/data/data/chat/local/chat_model.dart';
 import 'package:jing_hong_v4/data/model/chat/chat_model.dart';
 import 'package:jing_hong_v4/data/model/chat/message.dart';
 import 'package:jing_hong_v4/data/model/chat/session.dart';
-import 'package:jing_hong_v4/data/remote/chat/chat_repo.dart';
 import 'package:jing_hong_v4/ui/chat/view_models.dart/message_viewmodel.dart';
 import 'package:jing_hong_v4/utils/command.dart';
 import 'package:jing_hong_v4/utils/msg_notifier.dart';
 import 'package:jing_hong_v4/utils/result.dart';
-import 'package:async/async.dart' show CancelableOperation;
 
-class ChatViewmodel extends ChangeNotifier {
+class ChatViewmodel  {
   // 数据来源提供
   final ChatRepo _chatRepo;
   // 耗时操作命令，加载历史消息和历史会话
   late Command1<void, Session> loadMessages;
   late Command1<void, ChatModel> loadSessions;
+  late Command1<void,String?> createSession;
 
   ChatViewmodel({required ChatRepo chatRepo}) : _chatRepo = chatRepo {
     loadMessages = Command1(_loadMessages);
-    loadSessions = Command1(_loadSessions);
+    loadSessions = Command1(_loadSessions)..execute(currentModel.value);
+    createSession = Command1(_createSession);
   }
 
   // 用于进行消息提示
@@ -34,19 +37,12 @@ class ChatViewmodel extends ChangeNotifier {
 
   // 这一部分的核心状态是当前选择的模型和当前的会话
 
-  Session? _currentSession;
-  Session? get currentSession => _currentSession;
-  set currentSession(Session? s) {
-    _currentSession = s;
-    notifyListeners();
-  }
+  ValueNotifier<Session?> currentSession = ValueNotifier(null);
 
-  ChatModel _currentModel = chatModels[0];
-  ChatModel get currentModel => _currentModel;
-  set currentModel(ChatModel model){
-    _currentModel = model;
-    notifyListeners();
-  }
+
+  ValueNotifier<ChatModel> currentModel = ValueNotifier( chatModels[0]);
+ 
+
 
 
   List<Session> modelSessions = [];
@@ -74,19 +70,26 @@ class ChatViewmodel extends ChangeNotifier {
   // 11. 切换模型 - 加载历史会话，切换会话为空会话；
 
   // 1. 创建会话
-  Future<void> createSession(String? title) async {
+  Future<Result<void>> _createSession(String? title) async {
     final newSession = Session(
       id: DateTime.now().millisecondsSinceEpoch,
       title: title ?? '新建会话',
-      model: _currentModel.name,
+      model: currentModel.value.name,
     );
 
-    modelSessions.add(newSession);
-    currentSession = newSession;
+    modelSessions.insert(0, newSession);
 
-    final rst = await _chatRepo.saveSession(currentSession!);
+    final rst = await _chatRepo.saveSession(newSession);
+
     if (rst is Failure) msgNotifier.msg = rst.message;
-    return;
+
+    // 加入动画结束后执行
+    Timer(Duration(milliseconds: 1200), (){
+         currentSession.value = newSession;
+    });
+
+
+    return Success(null);
   }
 
   // 2. 保存消息
@@ -110,14 +113,14 @@ class ChatViewmodel extends ChangeNotifier {
 
   // 4. 发送消息 异步请求包在CancelableOperation中
   void sendMessage() {
-    assert(currentSession != null);
+    assert(currentSession.value != null);
     assert(_messageViewmodel.sendedMessages.isNotEmpty);
     final lastSendedMessage = _messageViewmodel.sendedMessages.last;
-    _messageViewmodel.setCachedMessage(Message.ready(currentSession!.id));
+    _messageViewmodel.setCachedMessage(Message.ready(currentSession.value!.id));
     _apiOperation = CancelableOperation<Result<Message>>.fromFuture(
       _chatRepo.getMessageFromApi(
         _messageViewmodel.sendedMessages,
-        _currentModel,
+        currentModel.value,
       ),
       onCancel: () {
         _messageViewmodel.setCachedMessage(
@@ -148,8 +151,8 @@ class ChatViewmodel extends ChangeNotifier {
   // 6. 手动发送消息
   Future<void> sendMessageManually(String message) async {
     final sendTime = DateTime.now().toIso8601String();
-    if (currentSession == null) {
-      createSession(message.substring(0, min(message.length, 10)));
+    if (currentSession.value == null) {
+      createSession.execute(message.substring(0, min(message.length, 10)));
     }
     final messageToSend = Message(
       id: DateTime.now().millisecondsSinceEpoch,
@@ -159,7 +162,7 @@ class ChatViewmodel extends ChangeNotifier {
       state: MsState.completed,
       showingContent: message,
       sendTime: sendTime,
-      sId: currentSession!.id,
+      sId: currentSession.value!.id,
     );
     await handleCachedMessage();
     await saveMessage(messageToSend);
@@ -199,7 +202,7 @@ class ChatViewmodel extends ChangeNotifier {
     } else {
       _messageViewmodel.clearMessage();
     }
-    currentSession = session;
+    currentSession.value = session;
   }
 
   // 10. 加载历史会话
@@ -219,4 +222,10 @@ class ChatViewmodel extends ChangeNotifier {
       await switchSession(null);
       loadSessions.execute(model);
   }
+
+  // 12. 重新加载会话
+  void reloadSessions(){
+    loadSessions.execute(currentModel.value);
+  }
+
 }

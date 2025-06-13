@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:jing_hong_v4/data/local/chat/basic_info.dart';
+import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
+import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
 import 'package:jing_hong_v4/data/model/chat/chat_model.dart';
 import 'package:jing_hong_v4/data/model/chat/message.dart';
 import 'package:jing_hong_v4/data/model/chat/session.dart';
@@ -9,12 +10,12 @@ import 'package:jing_hong_v4/service/api/chat/model/chat_api_data.dart';
 import 'package:jing_hong_v4/service/db/chat/chat_db.dart';
 import 'package:jing_hong_v4/utils/result.dart';
 
-class ChatRepo {
+class ChatRepoRemote implements ChatRepo {
   final ChapClient _chapClient;
   final ChatDb _chatDb;
 
   // 在provider中实现依赖注入
-  ChatRepo({required ChapClient chapClient, required ChatDb chatDb})
+  ChatRepoRemote({required ChapClient chapClient, required ChatDb chatDb})
     : _chapClient = chapClient,
       _chatDb = chatDb;
 
@@ -24,6 +25,7 @@ class ChatRepo {
 
   // 会话操作
   // 1. 通过模型获取会话信息
+  @override
   Future<Result<List<Session>>> getHisSessionByModel(ChatModel model) async {
     try {
       final sessions = await _chatDb.getSessionsByModel(model);
@@ -34,6 +36,7 @@ class ChatRepo {
   }
 
   // 2. 保存会话信息到数据库
+    @override
   Future<Result<void>> saveSession(Session session) async {
     try {
       await _chatDb.insertSession(session);
@@ -44,6 +47,7 @@ class ChatRepo {
   }
 
   // 3. 删除会话信息
+    @override
   Future<Result<void>> deleteSession(Session session) async {
     try {
       await _chatDb.deleteSession(session.id);
@@ -56,6 +60,7 @@ class ChatRepo {
 
   // 消息操作
   // 1. 根据会话获取历史消息记录
+    @override
   Future<Result<List<Message>>> getHisMessagesBySession(Session session) async {
     try {
       final messages = await _chatDb.getMessageBySessionId(session.id);
@@ -66,6 +71,7 @@ class ChatRepo {
   }
 
   // 2. 保存消息到历史消息记录
+    @override
   Future<Result<void>> saveMessage(Message message) async {
     try {
       await _chatDb.insertMessage(message);
@@ -76,6 +82,7 @@ class ChatRepo {
   }
 
   // 3. 从api获取新的消息
+    @override
   Future<Result<Message>> getMessageFromApi(
     List<Message> messages,
     ChatModel model,

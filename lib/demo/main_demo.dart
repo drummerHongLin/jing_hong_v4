@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:jing_hong_v4/data/local/chat/chat_model.dart';
+import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
+import 'package:jing_hong_v4/data/data/chat/local/chat_model.dart';
+import 'package:jing_hong_v4/data/data/chat/local/chat_repo_local.dart';
+import 'package:jing_hong_v4/ui/chat/chat_screen.dart' show ChatScreen;
+import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/session_panel.dart';
 
 /// Flutter code sample for [AnimatedSlide].
@@ -11,11 +15,16 @@ import 'package:jing_hong_v4/ui/chat/widgets/session_panel.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
+    final ChatRepo chatRepo= ChatRepoLocal();
+    final ChatViewmodel chatViewmodel = ChatViewmodel(chatRepo: chatRepo);
     return 
-    MaterialApp(home:  Center(
-
+    MaterialApp(home:  
+    ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: 900,maxWidth: 900,minHeight: 900,minWidth: 900),
+      child: ChatScreen(viewmodel: chatViewmodel,),
     ) ,);
   
   }

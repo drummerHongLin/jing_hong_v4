@@ -51,6 +51,7 @@ class _MillstoneBodyState extends State<MillstoneBody> {
   @override
   void didUpdateWidget(covariant MillstoneBody oldWidget) {
     reachedMillStone = -1;
+    // 更新组件时 重新定义
     millstoneList = MillstoneList(life: widget.life, isWide: widget.isWide);
     super.didUpdateWidget(oldWidget);
   }
