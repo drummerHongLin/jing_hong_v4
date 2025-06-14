@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart'
     show ChatViewmodel;
+import 'package:jing_hong_v4/ui/chat/widgets/send_func_area.dart';
 
 class MessageBody extends StatelessWidget {
   final double height;
@@ -15,7 +16,7 @@ class MessageBody extends StatelessWidget {
     required this.width,
     required this.viewmodel,
     required this.collapsed,
-    required this.openDrawer
+    required this.openDrawer,
   });
 
   @override
@@ -25,25 +26,48 @@ class MessageBody extends StatelessWidget {
       width: width,
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(children: [Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
           children: [
             Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if(collapsed)
-                  IconButton(onPressed: openDrawer, icon: Icon(Icons.vertical_split_outlined,size: 25,)),
-                if(collapsed)
-                  Icon(Icons.add_circle_outline_outlined,size: 25,),
-                if(viewmodel.currentSession.value != null)
-                  Text(viewmodel.currentSession.value!.title)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (collapsed)
+                      IconButton(
+                        onPressed: openDrawer,
+                        icon: Icon(Icons.vertical_split_outlined, size: 25),
+                      ),
+                    if (collapsed)
+                      IconButton(onPressed: (){viewmodel.switchSession(null);},icon:  Icon(Icons.add_circle_outline_outlined, size: 25)),
+                    ValueListenableBuilder(
+                        valueListenable: viewmodel.currentSession,
+                        builder: (context, s, c) {
+                          return 
+                          Text(s?.title??"", style: Theme.of(context).textTheme.labelMedium,);
+                        },
+                      ),
+                  ],
+                ),
+                IconButton(onPressed: (){}, icon: Icon(Icons.change_circle_outlined, size: 25)),
               ],
             ),
-            Icon(Icons.change_circle_outlined,size: 25)
+            Expanded(
+              child: Column(
+                children: [
+                  Text("data"),
+                  SendFuncArea(
+                    height: 40,
+                    width: width / 2,
+                    onSend: viewmodel.sendMessageManually,
+                    viewmodel: viewmodel.messageViewmodel,
+                  ),
+                ],
+              ),
+            ),
           ],
-        ), Expanded(child: Center(
-          child: Text('消息列表'),
-        ))]),
+        ),
       ),
     );
   }

@@ -4,11 +4,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
-import 'package:jing_hong_v4/data/data/chat/local/chat_model.dart';
 import 'package:jing_hong_v4/data/data/chat/local/chat_repo_local.dart';
 import 'package:jing_hong_v4/ui/chat/chat_screen.dart' show ChatScreen;
 import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
-import 'package:jing_hong_v4/ui/chat/widgets/session_panel.dart';
 
 /// Flutter code sample for [AnimatedSlide].
 

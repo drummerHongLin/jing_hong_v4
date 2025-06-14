@@ -24,12 +24,12 @@ class ChatViewmodel  {
   // 耗时操作命令，加载历史消息和历史会话
   late Command1<void, Session> loadMessages;
   late Command1<void, ChatModel> loadSessions;
-  late Command1<void,String?> createSession;
+  late Command1<Session,String?> createSession;
 
   ChatViewmodel({required ChatRepo chatRepo}) : _chatRepo = chatRepo {
     loadMessages = Command1(_loadMessages);
     loadSessions = Command1(_loadSessions)..execute(currentModel.value);
-    createSession = Command1(_createSession);
+    createSession = Command1<Session,String?>(_createSession);
   }
 
   // 用于进行消息提示
@@ -70,7 +70,7 @@ class ChatViewmodel  {
   // 11. 切换模型 - 加载历史会话，切换会话为空会话；
 
   // 1. 创建会话
-  Future<Result<void>> _createSession(String? title) async {
+  Future<Result<Session>> _createSession(String? title) async {
     final newSession = Session(
       id: DateTime.now().millisecondsSinceEpoch,
       title: title ?? '新建会话',
@@ -89,7 +89,7 @@ class ChatViewmodel  {
     });
 
 
-    return Success(null);
+    return Success(newSession);
   }
 
   // 2. 保存消息
@@ -112,11 +112,10 @@ class ChatViewmodel  {
   }
 
   // 4. 发送消息 异步请求包在CancelableOperation中
-  void sendMessage() {
-    assert(currentSession.value != null);
+  void sendMessage(Session cs) {
     assert(_messageViewmodel.sendedMessages.isNotEmpty);
     final lastSendedMessage = _messageViewmodel.sendedMessages.last;
-    _messageViewmodel.setCachedMessage(Message.ready(currentSession.value!.id));
+    _messageViewmodel.setCachedMessage(Message.ready(cs.id));
     _apiOperation = CancelableOperation<Result<Message>>.fromFuture(
       _chatRepo.getMessageFromApi(
         _messageViewmodel.sendedMessages,
@@ -151,9 +150,18 @@ class ChatViewmodel  {
   // 6. 手动发送消息
   Future<void> sendMessageManually(String message) async {
     final sendTime = DateTime.now().toIso8601String();
-    if (currentSession.value == null) {
-      createSession.execute(message.substring(0, min(message.length, 10)));
+
+    var session = currentSession.value;
+    
+    if (session == null) {
+      await createSession.execute(message.substring(0, min(message.length, 10)));
+      var cs = createSession.result as Result<Session>;
+      if(cs is Failure) return;
+      cs = cs as Success<Session>;
+      session = cs.data;
     }
+
+
     final messageToSend = Message(
       id: DateTime.now().millisecondsSinceEpoch,
       mId: _messageViewmodel.sendedMessages.length,
@@ -162,16 +170,22 @@ class ChatViewmodel  {
       state: MsState.completed,
       showingContent: message,
       sendTime: sendTime,
-      sId: currentSession.value!.id,
+      sId: session.id,
     );
     await handleCachedMessage();
     await saveMessage(messageToSend);
-    sendMessage();
+    sendMessage(session);
   }
 
   // 7. 重新发送消息
   void resendMessage() {
-    sendMessage();
+    if(currentSession.value == null ){
+      msgNotifier.msg = "会话未被创建";
+    }
+    else {
+      sendMessage(currentSession.value!);
+    }
+    
   }
 
   // 8. 加载历史消息

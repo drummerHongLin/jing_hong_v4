@@ -96,7 +96,7 @@ class Message {
       content: content,
       role: role,
       state: MsState.running,
-      showingContent: content.substring(0, end),
+      showingContent: content.substring(0, end-1),
       sendTime: sendTime,
       sId: sId,
     );

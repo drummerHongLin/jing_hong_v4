@@ -93,6 +93,6 @@ class Command1<T, A> extends Command<T> {
 
   /// Executes the action with the argument.
   Future<void> execute(A argument) async {
-    await _execute(() => _action(argument));
+  await _execute(() => _action(argument));
   }
 }

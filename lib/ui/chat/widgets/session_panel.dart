@@ -6,31 +6,49 @@ import 'package:jing_hong_v4/ui/animation/opacity_animation.dart'
 import 'package:jing_hong_v4/ui/animation/slide_animation.dart'
     show SlideAnimation;
 import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
-import 'package:jing_hong_v4/ui/theme/colors.dart';
+import 'package:jing_hong_v4/ui/chat/widgets/session_list_item.dart' show SessionListItem;
 
-class SessionPanel extends StatelessWidget {
+class SessionPanel extends StatefulWidget {
   final double height;
   final double width;
   final ChatViewmodel viewmodel;
-  final GlobalKey<AnimatedListState> _listKey;
   final VoidCallback closeDrawer;
 
-  SessionPanel({
+  const SessionPanel({
     super.key,
     required this.height,
     required this.width,
     required this.viewmodel,
     required this.closeDrawer
-  }) : _listKey = GlobalKey<AnimatedListState>() {
-    viewmodel.createSession.addListener(addNewSession);
-    viewmodel.loadSessions.addListener(clearList);
+  }) ;
+
+  @override
+  State<SessionPanel> createState() => _SessionPanelState();
+}
+
+class _SessionPanelState extends State<SessionPanel> {
+
+
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>() ;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.viewmodel.createSession.addListener(addNewSession);
+    widget.viewmodel.loadSessions.addListener(clearList);
   }
-  
-  
+
+  @override
+  void dispose() {
+     widget.viewmodel.createSession.removeListener(addNewSession);
+     widget.viewmodel.loadSessions.removeListener(clearList);
+    super.dispose();
+  }
+
 
   void addNewSession() {
     // 完成后插入
-    if(viewmodel.createSession.completed){
+    if(widget.viewmodel.createSession.completed){
          // 默认在第一个位置插入
       _addItem(0);
     }
@@ -44,8 +62,6 @@ class SessionPanel extends StatelessWidget {
   }
 
   void clearList() {
-    viewmodel.createSession.removeListener(addNewSession);
-    viewmodel.loadSessions.removeListener(clearList);
     _listKey.currentState?.removeAllItems((context, a) {
       return SizedBox.shrink();
     }, duration: Duration.zero);
@@ -65,16 +81,8 @@ class SessionPanel extends StatelessWidget {
         begin: isForward ? Offset(-50, 0) : Offset.zero,
         end: isForward ? Offset.zero : Offset(-50, 0),
         parent: animation,
-        child: 
-        Padding(
-          padding: EdgeInsets.only(bottom: 10),
-           child: Text(
-          session.title,
-          style:
-              isActivated
-                  ? TextStyle(color: Colors.white)
-                  : TextStyle(color: AppColors.active),
-        )),
+        child:  
+        SessionListItem(isActivated : isActivated,onTap: (){widget.viewmodel.switchSession(session);},session: session,)
       ),
     );
   }
@@ -82,8 +90,8 @@ class SessionPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: height,
-      width: width,
+      height: widget.height,
+      width: widget.width,
       child: Card(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
@@ -91,6 +99,7 @@ class SessionPanel extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 20,
             children: [
+              // 展示model的icon和打开drawer的按钮
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5.5),
                 child: Row(
@@ -98,23 +107,24 @@ class SessionPanel extends StatelessWidget {
                   children: [
                     // 监听当前模型变化
                     ListenableBuilder(
-                      listenable: viewmodel.currentModel,
+                      listenable: widget.viewmodel.currentModel,
                       builder: (_, _) {
                         return SvgPicture.asset(
-                          viewmodel.currentModel.value.iconUrl,
+                          widget.viewmodel.currentModel.value.iconUrl,
                           width: 30,
                           height: 30,
                         );
                       },
                     ),
-                    IconButton(onPressed: closeDrawer, icon:  Icon(Icons.vertical_split_outlined, size: 25)),
+                    IconButton(onPressed: widget.closeDrawer, icon:  Icon(Icons.vertical_split_outlined, size: 25)),
                   ],
                 ),
               ),
+              // 新建对话的按钮
               IconButton.outlined(
                 onPressed: () {
                   // 切换成空就行
-                  viewmodel.switchSession(null);
+                  widget.viewmodel.switchSession(null);
                 },
                 icon: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -130,6 +140,7 @@ class SessionPanel extends StatelessWidget {
                   ],
                 ),
               ),
+              // 历史会话标题
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Row(
@@ -146,17 +157,18 @@ class SessionPanel extends StatelessWidget {
                   ],
                 ),
               ),
+              // 历史会话列表
               Expanded(
                 child: ListenableBuilder(
-                  listenable: viewmodel.loadSessions,
+                  listenable: widget.viewmodel.loadSessions,
                   builder: (context, child) {
-                    if (viewmodel.loadSessions.running) {
+                    if (widget.viewmodel.loadSessions.running) {
                       return Center(child: CircularProgressIndicator());
-                    } else if (viewmodel.loadSessions.error) {
+                    } else if (widget.viewmodel.loadSessions.error) {
                       return Center(
                         child: TextButton.icon(
                           onPressed: () {
-                            viewmodel.reloadSessions();
+                            widget.viewmodel.reloadSessions();
                           },
                           label: Text("重新加载会话"),
                           icon: Icon(Icons.replay_outlined),
@@ -167,24 +179,24 @@ class SessionPanel extends StatelessWidget {
                     }
                   },
                   child: ListenableBuilder(
-                    listenable: Listenable.merge([viewmodel.currentSession]),
+                    listenable: Listenable.merge([widget.viewmodel.currentSession]),
                     builder:
                         (_, _) => Padding(
                           padding: EdgeInsets.only(left: 41),
                           child: AnimatedList(
                             key: _listKey,
-                            initialItemCount: viewmodel.modelSessions.length,
+                            initialItemCount: widget.viewmodel.modelSessions.length,
                             itemBuilder: (context, index, a) {
-                              if (index >= viewmodel.modelSessions.length) {
+                              if (index >= widget.viewmodel.modelSessions.length) {
                                 return SizedBox.shrink();
                               } else {
                                 return _buildListItem(
-                                  viewmodel.modelSessions[index],
+                                  widget.viewmodel.modelSessions[index],
                                   a,
                                   true,
                                   isActivated:
-                                      viewmodel.modelSessions[index].id ==
-                                      viewmodel.currentSession.value?.id,
+                                      widget.viewmodel.modelSessions[index].id ==
+                                      widget.viewmodel.currentSession.value?.id,
                                 );
                               }
                             },

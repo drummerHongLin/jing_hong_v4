@@ -1,0 +1,99 @@
+import 'package:flutter/material.dart';
+import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
+import 'package:jing_hong_v4/ui/chat/view_models.dart/message_viewmodel.dart';
+
+class SendFuncArea extends StatefulWidget {
+  final double height;
+  final double width;
+  final Function(String) onSend;
+  final MessageViewmodel viewmodel;
+
+  const SendFuncArea({
+    super.key,
+    required this.height,
+    required this.width,
+    required this.onSend,
+    required this.viewmodel,
+  });
+
+  @override
+  State<SendFuncArea> createState() => _SendFuncAreaState();
+}
+
+class _SendFuncAreaState extends State<SendFuncArea> {
+  final TextEditingController controller = TextEditingController();
+
+  bool isEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  void _sendMessage(String msg) {
+    if(msg.isNotEmpty){
+    widget.onSend(msg);
+    }
+    controller.clear();
+  }
+
+  bool getEnableState() {
+    return widget.viewmodel.cachedMessage?.state != MsState.running &&
+        widget.viewmodel.cachedMessage?.state != MsState.ready;
+  }
+
+  @override
+  Widget build(Object context) {
+    return Container(
+      height: widget.height,
+      width: widget.width,
+      decoration: BoxDecoration(
+        border: BoxBorder.all(color: Colors.grey, width: 1),
+        borderRadius: BorderRadius.all(Radius.circular(widget.height)),
+      ),
+      child: Row(
+        children: [
+          IconButton(onPressed: () {}, icon: Icon(Icons.mic_outlined)),
+          Expanded(
+            child: ListenableBuilder(
+              listenable: widget.viewmodel,
+              builder: (context, child) {
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        hintText: "输入消息和我对话吧！😊",
+                      ),
+                      readOnly: !getEnableState(),
+                      onSubmitted: (value) => {_sendMessage(value)},
+                      cursorColor: Colors.grey,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          IconButton(
+            onPressed: controller.text.isEmpty?null:
+            () {
+              _sendMessage(controller.text);
+            },
+            icon: Icon(Icons.send_outlined),
+          ),
+        ],
+      ),
+    );
+  }
+}
