@@ -46,6 +46,8 @@ flutter:
     - assets/images/millstone.png
     - assets/images/kimi.svg
     - assets/images/deepseek.png
+    - assets/images/robot.svg
+    - assets/images/Naruto.svg
   fonts:
     - family: Poppins
       fonts:

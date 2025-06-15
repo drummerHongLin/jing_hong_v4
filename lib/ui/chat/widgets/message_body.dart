@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart'
     show ChatViewmodel;
+import 'package:jing_hong_v4/ui/chat/widgets/message_list.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/send_func_area.dart';
 
 class MessageBody extends StatelessWidget {
@@ -55,8 +56,10 @@ class MessageBody extends StatelessWidget {
             ),
             Expanded(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 10,
                 children: [
-                  Text("data"),
+                  MessageList(viewmodel: viewmodel.messageViewmodel, maxWidth: width/2),
                   SendFuncArea(
                     height: 40,
                     width: width / 2,

@@ -54,8 +54,14 @@ class MessageViewmodel extends ChangeNotifier {
     // 如果不是完成态的消息则直接显示，比如错误
     if (message.state == MsState.completed ||
         message.content.length > message.showingContent.length) {
-      int index = message.showingContent.length;
-      setCachedMessage(message.readyVersion());
+      int index = 0;
+      if (message.state == MsState.completed) {
+        setCachedMessage(message.readyVersion());
+      } else {
+        index = message.showingContent.length;
+        setCachedMessage(message);
+      }
+
       _job = Timer.periodic(Duration(milliseconds: 100), (t) {
         // 设置退出条件
         if (_cachedMessage!.showingContent == message.content) {

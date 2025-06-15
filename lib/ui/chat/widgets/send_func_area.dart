@@ -23,7 +23,7 @@ class SendFuncArea extends StatefulWidget {
 class _SendFuncAreaState extends State<SendFuncArea> {
   final TextEditingController controller = TextEditingController();
 
-  bool isEnabled = true;
+  bool isEnabled = false;
 
   @override
   void initState() {
@@ -37,8 +37,8 @@ class _SendFuncAreaState extends State<SendFuncArea> {
   }
 
   void _sendMessage(String msg) {
-    if(msg.isNotEmpty){
-    widget.onSend(msg);
+    if (msg.isNotEmpty) {
+      widget.onSend(msg);
     }
     controller.clear();
   }
@@ -78,6 +78,15 @@ class _SendFuncAreaState extends State<SendFuncArea> {
                       ),
                       readOnly: !getEnableState(),
                       onSubmitted: (value) => {_sendMessage(value)},
+                      onChanged: (v) {
+                        setState(() {
+                          if (v.isEmpty) {
+                            isEnabled = false;
+                          } else {
+                            isEnabled = true;
+                          }
+                        });
+                      },
                       cursorColor: Colors.grey,
                     ),
                   ),
@@ -86,10 +95,12 @@ class _SendFuncAreaState extends State<SendFuncArea> {
             ),
           ),
           IconButton(
-            onPressed: controller.text.isEmpty?null:
-            () {
-              _sendMessage(controller.text);
-            },
+            onPressed:
+                isEnabled
+                    ? () {
+                      _sendMessage(controller.text);
+                    }
+                    : null,
             icon: Icon(Icons.send_outlined),
           ),
         ],
