@@ -14,6 +14,7 @@ dependencies:
   flutter_svg: ^2.1.0
   freezed_annotation: ^3.0.0
   go_router: ^15.1.1
+  intl: ^0.20.2
   json_annotation: ^4.9.0
   path: ^1.9.1
   provider: ^6.1.5
@@ -44,8 +45,9 @@ flutter:
     - assets/images/now.jpg
     - assets/images/study.jpg
     - assets/images/millstone.png
+    - assets/images/jinghong_logo.png
     - assets/images/kimi.svg
-    - assets/images/deepseek.png
+    - assets/images/deepseek.svg
     - assets/images/robot.svg
     - assets/images/Naruto.svg
   fonts:

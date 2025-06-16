@@ -22,9 +22,10 @@ class MessageListItem extends StatelessWidget {
     return Row(
       mainAxisAlignment:
           isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!isUser) _buildAvatar(isUser),
-        _buildMessage(isUser),
+        _buildMessage(isUser,context),
         if (isUser) _buildAvatar(isUser),
       ],
     );
@@ -38,15 +39,17 @@ class MessageListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildMessage(bool isUser) {
+  Widget _buildMessage(bool isUser,BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: Column(
         crossAxisAlignment:
             isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 30),
-          Card(child: Text(message.showingContent)),
+          Padding(padding: EdgeInsets.symmetric(horizontal:10),child: Text(message.sendTime,style: Theme.of(context).textTheme.labelSmall,),),
+          Card(
+            color: const Color.fromARGB(125, 31, 36, 45),
+            child: Padding(padding: EdgeInsets.all(10), child:  Text(message.showingContent))),
         ],
       ),
     );

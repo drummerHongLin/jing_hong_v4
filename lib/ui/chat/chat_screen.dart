@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/message_body.dart';
+import 'package:jing_hong_v4/ui/chat/widgets/model_panel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/session_panel.dart';
+import 'package:jing_hong_v4/ui/common/screen_size_notifier.dart';
 
 class ChatScreen extends StatefulWidget {
   final ChatViewmodel viewmodel;
@@ -15,6 +17,11 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen>
     with SingleTickerProviderStateMixin {
   bool collapsed = false;
+  bool showModelSelect = false;
+  Offset modelSelectOffset = Offset.zero;
+  bool isWide = false;
+  final GlobalKey iconKey = GlobalKey();
+  final GlobalKey containerKey = GlobalKey();
 
   late AnimationController controller;
   late Animation<double> animation;
@@ -22,14 +29,50 @@ class _ChatScreenState extends State<ChatScreen>
   @override
   void initState() {
     super.initState();
-    controller = AnimationController(vsync: this,duration: Duration(seconds: 1));
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500),
+    );
     animation = Tween<double>(begin: 0, end: 1).animate(controller);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    closeModelSelect();
+    isWide = ScreenSizeNotifier.of(context).isWide;
+    if (isWide) {
+      collapsed = false;
+      controller.animateTo(0, duration: Duration.zero);
+    } else {
+      collapsed = true;
+      controller.animateTo(1, duration: Duration.zero);
+    }
   }
 
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  void openModelSelect() {
+    if (!showModelSelect) {
+      setState(() {
+        getIconPosition();
+        showModelSelect = true;
+      });
+    } else {
+      closeModelSelect();
+    }
+  }
+
+  void closeModelSelect() {
+    if (showModelSelect) {
+      setState(() {
+        showModelSelect = false;
+      });
+    }
   }
 
   void openDrawer() {
@@ -48,8 +91,33 @@ class _ChatScreenState extends State<ChatScreen>
     });
   }
 
+  void getIconPosition() {
+    RenderBox? renderBox =
+        iconKey.currentContext?.findRenderObject() as RenderBox?;
+    RenderBox? containerBox =
+        containerKey.currentContext?.findRenderObject() as RenderBox?;
+
+    if (renderBox != null) {
+      Offset offset = renderBox.localToGlobal(
+        Offset.zero,
+        ancestor: containerBox,
+      );
+      modelSelectOffset = Offset(offset.dx, offset.dy);
+    }
+  }
+
+  void closePanel() {
+    if (!isWide && !collapsed) {
+      closeDrawer();
+    }
+    if (showModelSelect) {
+      closeModelSelect();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    isWide = ScreenSizeNotifier.of(context).isWide;
     return LayoutBuilder(
       builder: (context, constraints) {
         final height = constraints.maxHeight;
@@ -58,7 +126,30 @@ class _ChatScreenState extends State<ChatScreen>
           animation: animation,
           builder:
               (_, _) => Stack(
+                key: containerKey,
                 children: [
+                  Positioned(
+                    top: 0,
+                    left: isWide ? 300 * (1 - animation.value) : 0,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap:closePanel,
+                      child: MessageBody(
+                        height: height,
+                        width:
+                            isWide
+                                ? width - 300 * (1 - animation.value)
+                                : width,
+                        viewmodel: widget.viewmodel,
+                        collapsed: collapsed,
+                        openDrawer: openDrawer,
+                        openModelSelect: openModelSelect,
+                        closePanel: closePanel,
+                        isWide: isWide,
+                        iconKey: iconKey,
+                      ),
+                    ),
+                  ),
                   Positioned(
                     top: 0,
                     left: -300 * animation.value,
@@ -69,17 +160,14 @@ class _ChatScreenState extends State<ChatScreen>
                       closeDrawer: closeDrawer,
                     ),
                   ),
-                  Positioned(
-                    top: 0,
-                    left: 300 * (1 - animation.value),
-                    child: MessageBody(
-                      height: height,
-                      width: width -300 * (1 - animation.value),
-                      viewmodel: widget.viewmodel,
-                      collapsed: collapsed,
-                      openDrawer: openDrawer,
+                  if (showModelSelect)
+                    ModelPanel(
+                      onModelTap: (m) {
+                        closeModelSelect();
+                        widget.viewmodel.switchModel(m);
+                      },
+                      panelOffset: modelSelectOffset,
                     ),
-                  ),
                 ],
               ),
         );

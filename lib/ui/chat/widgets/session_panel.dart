@@ -7,6 +7,7 @@ import 'package:jing_hong_v4/ui/animation/slide_animation.dart'
     show SlideAnimation;
 import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/session_list_item.dart' show SessionListItem;
+import 'package:jing_hong_v4/ui/theme/colors.dart';
 
 class SessionPanel extends StatefulWidget {
   final double height;
@@ -35,13 +36,11 @@ class _SessionPanelState extends State<SessionPanel> {
   void initState() {
     super.initState();
     widget.viewmodel.createSession.addListener(addNewSession);
-    widget.viewmodel.loadSessions.addListener(clearList);
   }
 
   @override
   void dispose() {
      widget.viewmodel.createSession.removeListener(addNewSession);
-     widget.viewmodel.loadSessions.removeListener(clearList);
     super.dispose();
   }
 
@@ -61,11 +60,6 @@ class _SessionPanelState extends State<SessionPanel> {
     );
   }
 
-  void clearList() {
-    _listKey.currentState?.removeAllItems((context, a) {
-      return SizedBox.shrink();
-    }, duration: Duration.zero);
-  }
 
   Widget _buildListItem(
     Session session,
@@ -93,6 +87,7 @@ class _SessionPanelState extends State<SessionPanel> {
       height: widget.height,
       width: widget.width,
       child: Card(
+        color: const Color.fromARGB(255, 21, 26, 35),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Column(
@@ -147,7 +142,7 @@ class _SessionPanelState extends State<SessionPanel> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   spacing: 8,
                   children: [
-                    Icon(Icons.access_time_outlined, size: 25),
+                    Icon(Icons.access_time_outlined, size: 25,color: Colors.white,),
                     Text(
                       '历史会话',
                       style: Theme.of(

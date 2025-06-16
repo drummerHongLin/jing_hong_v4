@@ -17,6 +17,7 @@ import 'package:jing_hong_v4/ui/chat/view_models.dart/message_viewmodel.dart';
 import 'package:jing_hong_v4/utils/command.dart';
 import 'package:jing_hong_v4/utils/msg_notifier.dart';
 import 'package:jing_hong_v4/utils/result.dart';
+import 'package:intl/intl.dart';
 
 class ChatViewmodel  {
   // 数据来源提供
@@ -149,7 +150,7 @@ class ChatViewmodel  {
 
   // 6. 手动发送消息
   Future<void> sendMessageManually(String message) async {
-    final sendTime = DateTime.now().toIso8601String();
+    final sendTime =DateFormat('yyyy-MM-dd hh:mm:ss').format(DateTime.now());
 
     var session = currentSession.value;
     
@@ -233,13 +234,22 @@ class ChatViewmodel  {
 
   // 11. 切换模型
   Future<void> switchModel(ChatModel model) async {
+        currentModel.value = model;
+      await loadSessions.execute(model);
       await switchSession(null);
-      loadSessions.execute(model);
+  
   }
 
   // 12. 重新加载会话
   void reloadSessions(){
     loadSessions.execute(currentModel.value);
+  }
+  // 13. 重新加载消息
+  void reloadMessages(){
+    if(currentSession.value != null){
+    loadMessages.execute(currentSession.value!);
+    }
+
   }
 
 }

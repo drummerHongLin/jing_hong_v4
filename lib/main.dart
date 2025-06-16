@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:jing_hong_v4/config/dependencies.dart';
 import 'package:jing_hong_v4/route/router.dart';
 import 'package:jing_hong_v4/ui/theme/theme.dart';
+import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart' show databaseFactory;
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart' show databaseFactoryFfiWeb;
 
@@ -11,7 +13,11 @@ void main() {
     databaseFactory = databaseFactoryFfiWeb;
   }
    WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MainApp());
+  runApp(
+    MultiProvider(providers: localProviders,child:
+     MainApp()
+     
+     ));
 }
 
 class MainApp extends StatelessWidget {

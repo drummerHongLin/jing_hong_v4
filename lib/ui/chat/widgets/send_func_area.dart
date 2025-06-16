@@ -6,6 +6,7 @@ class SendFuncArea extends StatefulWidget {
   final double height;
   final double width;
   final Function(String) onSend;
+  final VoidCallback closePanel;
   final MessageViewmodel viewmodel;
 
   const SendFuncArea({
@@ -13,7 +14,7 @@ class SendFuncArea extends StatefulWidget {
     required this.height,
     required this.width,
     required this.onSend,
-    required this.viewmodel,
+    required this.viewmodel, required this.closePanel,
   });
 
   @override
@@ -54,12 +55,12 @@ class _SendFuncAreaState extends State<SendFuncArea> {
       height: widget.height,
       width: widget.width,
       decoration: BoxDecoration(
-        border: BoxBorder.all(color: Colors.grey, width: 1),
+        border: Border.all(color: Colors.grey, width: 1),
         borderRadius: BorderRadius.all(Radius.circular(widget.height)),
       ),
       child: Row(
         children: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.mic_outlined)),
+          IconButton(onPressed: null, icon: Icon(Icons.mic_outlined)),
           Expanded(
             child: ListenableBuilder(
               listenable: widget.viewmodel,
@@ -70,6 +71,7 @@ class _SendFuncAreaState extends State<SendFuncArea> {
                     type: MaterialType.transparency,
                     child: TextField(
                       controller: controller,
+                      onTap: widget.closePanel,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
@@ -98,6 +100,7 @@ class _SendFuncAreaState extends State<SendFuncArea> {
             onPressed:
                 isEnabled
                     ? () {
+                      widget.closePanel();
                       _sendMessage(controller.text);
                     }
                     : null,
