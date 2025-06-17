@@ -1,21 +1,23 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
 import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
 import 'package:jing_hong_v4/data/model/chat/chat_model.dart';
 import 'package:jing_hong_v4/data/model/chat/message.dart';
 import 'package:jing_hong_v4/data/model/chat/session.dart';
-import 'package:jing_hong_v4/service/api/chat/chat_client.dart' show ChapClient;
+import 'package:jing_hong_v4/service/api/chat/chat_client.dart' show ChatClient;
 import 'package:jing_hong_v4/service/api/chat/model/chat_api_data.dart';
 import 'package:jing_hong_v4/service/db/chat/chat_db.dart';
 import 'package:jing_hong_v4/utils/result.dart';
 
 class ChatRepoRemote implements ChatRepo {
-  final ChapClient _chapClient;
+  final ChatClient _chapClient;
   final ChatDb _chatDb;
 
   // 在provider中实现依赖注入
-  ChatRepoRemote({required ChapClient chapClient, required ChatDb chatDb})
+  ChatRepoRemote({required ChatClient chapClient, required ChatDb chatDb})
     : _chapClient = chapClient,
       _chatDb = chatDb;
 
@@ -108,12 +110,12 @@ class ChatRepoRemote implements ChatRepo {
         role: Role.assistant,
         state: MsState.completed,
         showingContent: resp.choices.first.message.content,
-        sendTime: DateTime.now().toIso8601String(),
+        sendTime: DateFormat('yyyy-MM-dd hh:mm:ss').format(DateTime.now()),
         sId: lastMessage.sId,
       );
       return Success(newMessage);
     } 
-    on IOException catch (e) {
+    on DioException catch (e) {
       // 网络异常是可预见的异常
       final newMessage = Message(
         id: lastMessage.id + 1,
@@ -130,5 +132,11 @@ class ChatRepoRemote implements ChatRepo {
     catch (e) {
       return Failure("获取消息失败", e);
     }
+  }
+  
+  // 4. 更新模型
+  Result<bool> switchModedl(ChatModel model){
+    _chapClient.setChatModel(model.name);
+    return Success(true);
   }
 }

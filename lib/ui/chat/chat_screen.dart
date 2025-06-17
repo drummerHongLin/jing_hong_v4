@@ -39,6 +39,7 @@ class _ChatScreenState extends State<ChatScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    widget.viewmodel.onViewChange();
     closeModelSelect();
     isWide = ScreenSizeNotifier.of(context).isWide;
     if (isWide) {
@@ -52,6 +53,7 @@ class _ChatScreenState extends State<ChatScreen>
 
   @override
   void dispose() {
+    widget.viewmodel.onViewChange();
     controller.dispose();
     super.dispose();
   }
@@ -173,14 +175,5 @@ class _ChatScreenState extends State<ChatScreen>
         );
       },
     );
-  }
-
-  Widget _buildInWide(BuildContext context) {
-    //
-    return Placeholder();
-  }
-
-  Widget _buildOutWide(BuildContext context) {
-    return Placeholder();
   }
 }

@@ -90,7 +90,7 @@ class ChatDb {
     return await db.insert(
       'messages',
       message.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.ignore,
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 

@@ -14,7 +14,7 @@ void main() {
   }
    WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    MultiProvider(providers: localProviders,child:
+    MultiProvider(providers: remoteProviders,child:
      MainApp()
      
      ));

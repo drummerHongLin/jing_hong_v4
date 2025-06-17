@@ -7,7 +7,6 @@ import 'package:jing_hong_v4/ui/animation/slide_animation.dart'
     show SlideAnimation;
 import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/session_list_item.dart' show SessionListItem;
-import 'package:jing_hong_v4/ui/theme/colors.dart';
 
 class SessionPanel extends StatefulWidget {
   final double height;

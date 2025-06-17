@@ -24,4 +24,6 @@ abstract class ChatRepo {
     List<Message> messages,
     ChatModel model,
   );
+
+    Result<bool> switchModedl(ChatModel model);
 }

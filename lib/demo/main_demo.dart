@@ -13,6 +13,8 @@ import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
 
   @override
   Widget build(BuildContext context) {

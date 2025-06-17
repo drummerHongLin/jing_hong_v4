@@ -92,4 +92,9 @@ class ChatRepoLocal implements ChatRepo {
   Future<Result<void>> saveSession(Session session) async {
     return Success(null);
   }
+  @override
+   Result<bool> switchModedl(ChatModel model){
+
+    return Success(true);
+  }
 }

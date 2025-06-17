@@ -104,9 +104,9 @@ class ChatViewmodel  {
   }
 
   // 3. 处理缓存消息
-  Future<void> handleCachedMessage() async {
+  Future<void> handleCachedMessage({bool saveRunning = false}) async {
     if (_messageViewmodel.cachedMessage != null) {
-      _messageViewmodel.stopType();
+      _messageViewmodel.stopType(saveRunning: saveRunning);
       await saveMessage(_messageViewmodel.cachedMessage!);
     }
     return;
@@ -145,7 +145,7 @@ class ChatViewmodel  {
   // 5. 停止消息
   void stopSendMessage() {
     _apiOperation?.cancel();
-    _messageViewmodel.stopType();
+         _messageViewmodel.stopType();
   }
 
   // 6. 手动发送消息
@@ -210,8 +210,7 @@ class ChatViewmodel  {
 
   // 9. 切换会话
   Future<void> switchSession(Session? session) async {
-    stopSendMessage();
-    await handleCachedMessage();
+    onViewChange();
     if (session != null) {
       loadMessages.execute(session);
     } else {
@@ -234,7 +233,9 @@ class ChatViewmodel  {
 
   // 11. 切换模型
   Future<void> switchModel(ChatModel model) async {
-        currentModel.value = model;
+      final rst = _chatRepo.switchModedl(model);
+      if(rst is Failure) return;
+      currentModel.value = model;
       await loadSessions.execute(model);
       await switchSession(null);
   
@@ -250,6 +251,12 @@ class ChatViewmodel  {
     loadMessages.execute(currentSession.value!);
     }
 
+  }
+
+  // 14. 页面更新或退出时，停止消息的打印，并保存缓存信息
+  void onViewChange(){
+    _apiOperation?.cancel();
+    handleCachedMessage(saveRunning: true);
   }
 
 }

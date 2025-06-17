@@ -44,7 +44,7 @@ class Message {
         (state) => state.toString() == m['state'],
         orElse: () => MsState.completed,
       ),
-      showingContent: m['content'],
+      showingContent: m['showingContent'],
       sendTime: m['sendTime'],
       sId: m['sessionId'],
     );

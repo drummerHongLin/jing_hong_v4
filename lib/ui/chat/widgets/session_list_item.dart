@@ -16,7 +16,7 @@ class SessionListItem extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: isActivated? null: onTap,
       child:      Padding(
           padding: EdgeInsets.only(bottom: 10),
            child: Text(

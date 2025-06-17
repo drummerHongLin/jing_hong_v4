@@ -14,12 +14,15 @@ dependencies:
   flutter_svg: ^2.1.0
   freezed_annotation: ^3.0.0
   go_router: ^15.1.1
+  flutter_math_fork: ^0.7.3
+  gpt_markdown: ^1.0.19
+  
   intl: ^0.20.2
   json_annotation: ^4.9.0
   path: ^1.9.1
   provider: ^6.1.5
   sqflite: ^2.4.2
-  sqflite_common_ffi_web: ^1.0.0
+  sqflite_common_ffi_web: ^1.0.0 # https://github.com/tekartik/sqflite/tree/master/packages_web/sqflite_common_ffi_web#setup-binaries
 
 dev_dependencies:
   flutter_test:

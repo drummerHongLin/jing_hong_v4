@@ -1,9 +1,5 @@
-import 'dart:math' show max;
-import 'dart:ui_web';
-
 import 'package:flutter/material.dart';
 import 'package:jing_hong_v4/data/model/chat/message.dart';
-import 'package:jing_hong_v4/ui/chat/view_models.dart/message_viewmodel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/message_list_item.dart';
 
 class MessageList extends StatefulWidget {
@@ -14,9 +10,14 @@ class MessageList extends StatefulWidget {
 
   final double maxHeight;
 
+
+  final VoidCallback? onResend;
+
+  final VoidCallback? onStop;
+
   const MessageList({
     super.key,
-    required this.maxWidth, required this.sendedMessages,  this.cachedMessage, required this.maxHeight,
+    required this.maxWidth, required this.sendedMessages,  this.cachedMessage, required this.maxHeight, this.onResend, this.onStop,
   });
 
   @override
@@ -32,11 +33,6 @@ class _MessageListState extends State<MessageList> {
     _scrollToBottom();
   }
 
-  @override
-  void didUpdateWidget(covariant MessageList oldWidget) {
-    super.didUpdateWidget(oldWidget);
-        _scrollToBottom();
-  }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -70,11 +66,14 @@ class _MessageListState extends State<MessageList> {
           controller: controller,
           children: [
             for (var message in widget.sendedMessages)
-              MessageListItem(message: message, maxWidth: widget.maxWidth),
+              MessageListItem(message: message, maxWidth: widget.maxWidth,isCachedMessage: false,),
             if (widget.cachedMessage != null)
               MessageListItem(
                 message: widget.cachedMessage!,
                 maxWidth: widget.maxWidth,
+                isCachedMessage: true,
+                onResend: widget.onResend,
+                onStop: widget.onStop,
               ),
           ],
         ),

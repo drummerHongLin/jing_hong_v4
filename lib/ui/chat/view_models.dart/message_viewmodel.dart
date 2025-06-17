@@ -66,6 +66,7 @@ class MessageViewmodel extends ChangeNotifier {
         // 设置退出条件
         if (_cachedMessage!.showingContent == message.content) {
           message.state = MsState.completed;
+          message.showingContent = message.content;
           setCachedMessage(message);
           t.cancel();
         } else {
@@ -78,10 +79,10 @@ class MessageViewmodel extends ChangeNotifier {
     }
   }
 
-  void stopType() {
-    if (_job != null) {
+  void stopType({bool saveRunning = false}) {
+    if (_job?.isActive??false ) {
       _job!.cancel();
-      setCachedMessageState(MsState.stopped);
+      setCachedMessageState(saveRunning?MsState.running: MsState.stopped);
     }
   }
 
