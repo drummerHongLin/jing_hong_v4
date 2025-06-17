@@ -257,6 +257,7 @@ class ChatViewmodel  {
   void onViewChange(){
     _apiOperation?.cancel();
     handleCachedMessage(saveRunning: true);
+    _messageViewmodel.setCachedMessage(null);
   }
 
 }

@@ -34,6 +34,15 @@ class _MessageListState extends State<MessageList> {
   }
 
 
+  @override
+  void didUpdateWidget(covariant MessageList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if(oldWidget.cachedMessage != widget.cachedMessage){
+      _scrollToBottom();
+    }
+  }
+
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (controller.hasClients) {

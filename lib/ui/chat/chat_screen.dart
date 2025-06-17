@@ -38,9 +38,9 @@ class _ChatScreenState extends State<ChatScreen>
 
   @override
   void didChangeDependencies() {
-    super.didChangeDependencies();
-    widget.viewmodel.onViewChange();
+        widget.viewmodel.onViewChange();
     closeModelSelect();
+    super.didChangeDependencies();
     isWide = ScreenSizeNotifier.of(context).isWide;
     if (isWide) {
       collapsed = false;
@@ -49,6 +49,12 @@ class _ChatScreenState extends State<ChatScreen>
       collapsed = true;
       controller.animateTo(1, duration: Duration.zero);
     }
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatScreen oldWidget) {
+        widget.viewmodel.onViewChange();
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
