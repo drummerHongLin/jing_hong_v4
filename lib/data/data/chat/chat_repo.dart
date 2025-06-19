@@ -25,5 +25,5 @@ abstract class ChatRepo {
     ChatModel model,
   );
 
-    Result<bool> switchModedl(ChatModel model);
+    Result<bool> switchModel(ChatModel model);
 }

@@ -1,0 +1,11 @@
+version: "1"
+services:
+  jinghong-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jonghongweb
+    ports:
+      - 5002:80
+    restart: always
+    container_name: "jinghongweb-v1"

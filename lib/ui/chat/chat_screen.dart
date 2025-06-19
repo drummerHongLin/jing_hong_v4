@@ -15,7 +15,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   bool collapsed = false;
   bool showModelSelect = false;
   Offset modelSelectOffset = Offset.zero;
@@ -34,11 +34,12 @@ class _ChatScreenState extends State<ChatScreen>
       duration: Duration(milliseconds: 500),
     );
     animation = Tween<double>(begin: 0, end: 1).animate(controller);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void didChangeDependencies() {
-        widget.viewmodel.onViewChange();
+    widget.viewmodel.onViewChange();
     closeModelSelect();
     super.didChangeDependencies();
     isWide = ScreenSizeNotifier.of(context).isWide;
@@ -53,7 +54,7 @@ class _ChatScreenState extends State<ChatScreen>
 
   @override
   void didUpdateWidget(covariant ChatScreen oldWidget) {
-        widget.viewmodel.onViewChange();
+    widget.viewmodel.onViewChange();
     super.didUpdateWidget(oldWidget);
   }
 
@@ -61,7 +62,19 @@ class _ChatScreenState extends State<ChatScreen>
   void dispose() {
     widget.viewmodel.onViewChange();
     controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 在应用退出时保存相关信息
+    if (state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
+      widget.viewmodel.onViewChange();
+    }
+
+    super.didChangeAppLifecycleState(state);
   }
 
   void openModelSelect() {
@@ -141,7 +154,7 @@ class _ChatScreenState extends State<ChatScreen>
                     left: isWide ? 300 * (1 - animation.value) : 0,
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTap:closePanel,
+                      onTap: closePanel,
                       child: MessageBody(
                         height: height,
                         width:

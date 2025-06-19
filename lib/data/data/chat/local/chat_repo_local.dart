@@ -93,7 +93,7 @@ class ChatRepoLocal implements ChatRepo {
     return Success(null);
   }
   @override
-   Result<bool> switchModedl(ChatModel model){
+   Result<bool> switchModel(ChatModel model){
 
     return Success(true);
   }

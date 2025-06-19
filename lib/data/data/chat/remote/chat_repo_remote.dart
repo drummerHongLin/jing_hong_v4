@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
@@ -134,8 +132,10 @@ class ChatRepoRemote implements ChatRepo {
     }
   }
   
+  
   // 4. 更新模型
-  Result<bool> switchModedl(ChatModel model){
+  @override
+  Result<bool> switchModel(ChatModel model){
     _chapClient.setChatModel(model.name);
     return Success(true);
   }

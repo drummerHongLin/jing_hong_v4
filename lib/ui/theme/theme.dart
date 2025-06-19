@@ -21,8 +21,8 @@ static const _inputDecorationTheme = InputDecorationTheme(
     brightness: Brightness.light,
     colorScheme: AppColors.lightColorScheme,
     inputDecorationTheme: _inputDecorationTheme,
-    fontFamily: "Poppins",
-    fontFamilyFallback: ['SourceHanSansSc']
+      fontFamily: "Poppins",
+      fontFamilyFallback: ['NotoSansSC']
   );
 
 
@@ -32,7 +32,7 @@ static const _inputDecorationTheme = InputDecorationTheme(
     colorScheme: AppColors.darkColorScheme,
     inputDecorationTheme: _inputDecorationTheme,
     fontFamily: "Poppins",
-      fontFamilyFallback: ['SourceHanSansSc']
+      fontFamilyFallback: ['NotoSansSC']
   );
 
 

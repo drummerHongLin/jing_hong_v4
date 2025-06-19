@@ -1,23 +1,23 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+
 import 'package:jing_hong_v4/config/dependencies.dart';
 import 'package:jing_hong_v4/route/router.dart';
 import 'package:jing_hong_v4/ui/theme/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart' show databaseFactory;
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart' show databaseFactoryFfiWeb;
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart'
+    show databaseFactoryFfiWeb;
 
 void main() {
-    if (kIsWeb) {
+  if (kIsWeb) {
     // Change default factory on the web
     databaseFactory = databaseFactoryFfiWeb;
   }
-   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    MultiProvider(providers: remoteProviders,child:
-     MainApp()
-     
-     ));
+  WidgetsFlutterBinding.ensureInitialized();
+
+
+  runApp(MultiProvider(providers: remoteProviders, child: MainApp()));
 }
 
 class MainApp extends StatelessWidget {
@@ -25,10 +25,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp.router(
-     routerConfig: router(),
-     theme: AppTheme.lightTheme,
-     darkTheme: AppTheme.dartTheme,
+    return MaterialApp.router(
+      routerConfig: router(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.dartTheme,
     );
   }
 }

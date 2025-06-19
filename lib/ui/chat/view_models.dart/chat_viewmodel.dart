@@ -233,7 +233,7 @@ class ChatViewmodel  {
 
   // 11. 切换模型
   Future<void> switchModel(ChatModel model) async {
-      final rst = _chatRepo.switchModedl(model);
+      final rst = _chatRepo.switchModel(model);
       if(rst is Failure) return;
       currentModel.value = model;
       await loadSessions.execute(model);

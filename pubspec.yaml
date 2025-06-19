@@ -35,6 +35,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+#    - assets/google_fonts/
     - assets/images/home.png
     - assets/images/chat.png
     - assets/images/about.png
@@ -61,10 +62,10 @@ flutter:
         - asset: assets/fonts/Poppins-ExtraBold.ttf
         - asset: assets/fonts/Poppins-Bold.ttf
           style: normal
-    - family: SourceHanSansSc
-      fonts:
-        - asset: assets/fonts/SourceHanSansSc-Regular.otf
-        - asset: assets/fonts/SourceHanSansSc-Light.otf
-        - asset: assets/fonts/SourceHanSansSc-Heavy.otf
-        - asset: assets/fonts/SourceHanSansSc-Bold.otf
-          style: normal
+#    - family: SourceHanSansSc
+#      fonts:
+#        - asset: assets/fonts/SourceHanSansSc-Regular.otf
+#        - asset: assets/fonts/SourceHanSansSc-Light.otf
+#        - asset: assets/fonts/SourceHanSansSc-Heavy.otf
+#        - asset: assets/fonts/SourceHanSansSc-Bold.otf
+#          style: normal
