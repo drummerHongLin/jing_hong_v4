@@ -27,4 +27,12 @@ class AuthViewmodel {
     return await _authRepo.register(username, code);
   }
 
+  Future<Result<void>> sendChangePasswordEmail(String username) async {
+    return await _authRepo.sendChangePasswordEmail(username);
+  }
+
+  Future<Result<void>> changePassword(String username, String password, String code) async{
+    return await _authRepo.changePassword(password, username, code);
+  }
+
 }

@@ -71,3 +71,5 @@ abstract  class GetUserResponse with _$GetUserResponse {
   factory GetUserResponse.fromJson(Map<String, dynamic> json) =>
       _$GetUserResponseFromJson(json);
 }
+
+

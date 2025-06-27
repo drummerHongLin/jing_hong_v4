@@ -18,11 +18,11 @@ class AuthRepoRemote extends AuthRepo {
 
   @override
   TokenInfo? get token {
-    if( _token == null) return null;
+    if (_token == null) return null;
     final now = DateTime.now().millisecondsSinceEpoch;
     if (_token!.expiredAt < now) {
-        logout();
-        return null;
+      logout();
+      return null;
     }
     return _token;
   }
@@ -34,11 +34,35 @@ class AuthRepoRemote extends AuthRepo {
        _authClient = authClient;
 
   @override
-  Future<Result<void>> changePassword(String newPassword) async {
-    return Success(null);
-  }
+  Future<Result<void>> changePassword(
+    String newPassword,
+    String username,
+    String code,
+  ) async {
+    try {
+      final rst = await _authClient.verifyEmail(
+        username,
+        EmailVerifingRequest(code: code),
+      );
+      await _authClient.changePassword(
+        ChangePasswordRequest(newPassword: newPassword),
+        username,
+         rst.token,
+      );
+      token = TokenInfo(value: rst.token, expiredAt: rst.expiredAt);
+      _preferencesService.saveToken(_token);
 
-  
+      return Success(null);
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
+        final data = e.response?.data;
+        return Failure("修改密码失败:${data['message']}", e);
+      }
+      return Failure("修改密码失败!", e);
+    } on Exception catch (e) {
+      return Failure("修改密码失败!", e);
+    }
+  }
 
   @override
   Future<Result<void>> login(String username, String password) async {
@@ -49,16 +73,13 @@ class AuthRepoRemote extends AuthRepo {
       token = TokenInfo(value: rst1.token, expiredAt: rst1.expiredAt);
       _preferencesService.saveToken(_token);
       return Success(null);
-    } 
-        on DioException catch(e){
-      if(e.response?.data != null){
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
         final data = e.response?.data;
-         return Failure("登录失败:${data['message']}", e);
+        return Failure("登录失败:${data['message']}", e);
       }
       return Failure("登录失败!", e);
-    }
-    
-    on Exception catch (e) {
+    } on Exception catch (e) {
       return Failure("登录失败!", e);
     }
   }
@@ -73,15 +94,13 @@ class AuthRepoRemote extends AuthRepo {
       token = TokenInfo(value: rst1.token, expiredAt: rst1.expiredAt);
       _preferencesService.saveToken(_token);
       return Success(null);
-    } 
-    on DioException catch(e){
-      if(e.response?.data != null){
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
         final data = e.response?.data;
-         return Failure("注册失败:${data['message']}", e);
+        return Failure("注册失败:${data['message']}", e);
       }
       return Failure("注册失败!", e);
-    }
-    on Exception catch (e) {
+    } on Exception catch (e) {
       return Failure("注册失败!", e);
     }
   }
@@ -142,7 +161,7 @@ class AuthRepoRemote extends AuthRepo {
           nickname: rst.nickname,
           avatarUrl: rst.avatarUrl,
           email: rst.email,
-          token: _token!.value
+          token: _token!.value,
         ),
       );
     } on DioException catch (e) {
@@ -165,6 +184,25 @@ class AuthRepoRemote extends AuthRepo {
       return Success(null);
     } on Exception catch (_) {
       return Failure("登出失败");
+    }
+  }
+
+  @override
+  Future<Result<void>> sendChangePasswordEmail(String username) async {
+    try {
+      // 先确定用户是否已经验证过了
+      final rst = await _authClient.verifyUser(username);
+
+      if (!rst) {
+        return Failure("用户未认证");
+      }
+
+      await _authClient.sendEmail(username);
+      return Success(null);
+    } on DioException catch (e) {
+      return Failure("${e.response?.data["message"]}", e);
+    } on Exception catch (e) {
+      return Failure("邮件发送失败!", e);
     }
   }
 }

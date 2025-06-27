@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jing_hong_v4/route/routes.dart' show Routes;
 import 'package:jing_hong_v4/ui/about/about_screen.dart';
+import 'package:jing_hong_v4/ui/auth/forget_password.dart/forget_screen.dart';
 import 'package:jing_hong_v4/ui/auth/register/register_screen.dart';
 import 'package:jing_hong_v4/ui/chat/chat_screen.dart';
 import 'package:jing_hong_v4/data/local/route/data.dart' show navInfo;
@@ -62,6 +63,11 @@ GoRouter router() => GoRouter(
     GoRoute(
       path: "/register",
       pageBuilder: (context, state) => popPage(state.pageKey,RegisterScreen(viewmodel: context.read(),))
+      ,
+    ),
+        GoRoute(
+      path: "/forget-password",
+      pageBuilder: (context, state) => popPage(state.pageKey,ForgetScreen(viewmodel: context.read(),))
       ,
     ),
     ]

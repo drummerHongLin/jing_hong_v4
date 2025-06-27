@@ -30,13 +30,23 @@ class AuthClient {
     return GetUserResponse.fromJson(res.data);
   }
 
+  Future<bool> verifyUser(String username) async {
+    final rst = await client.get("/v1/users/$username/verify");
+    if (rst.statusCode == 200) {
+      return true;
+    }
+    return false;
+  }
+
   Future<void> changePassword(
     ChangePasswordRequest request,
     String username,
+    String token,
   ) async {
-    await client.post(
+    await client.put(
       "/v1/users/$username/change-password",
       data: jsonEncode(request),
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
   }
 
