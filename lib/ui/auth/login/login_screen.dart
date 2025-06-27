@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jing_hong_v4/data/model/auth/user_info.dart';
+import 'package:jing_hong_v4/route/routes.dart';
+import 'package:jing_hong_v4/ui/auth/auth_viewmodel.dart';
 import 'package:jing_hong_v4/ui/theme/colors.dart';
 
 // 独立元素不多，就在当前文件中描写
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final AuthViewmodel viewmodel;
+
+  const LoginScreen({super.key, required this.viewmodel});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -13,19 +18,18 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String _errorMessage = "";
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  // 模拟登录验证
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -33,22 +37,29 @@ class _LoginScreenState extends State<LoginScreen> {
         _errorMessage = '';
       });
 
-      // 模拟API调用延迟
-      await Future.delayed(Duration(seconds: 2));
-
-      // 简单验证逻辑（实际开发中需要连接后端）
-      if (_emailController.text == 'user@example.com' &&
-          _passwordController.text == 'password123') {
-        // 登录成功处理
-        if (mounted) {
-          context.pop();
-        }
-      } else {
-        setState(() {
-          _errorMessage = '用户名或密码错误';
-          _isLoading = false;
-        });
-      }
+      final rst = await widget.viewmodel.login(
+        UserInfo(
+          username: _usernameController.text,
+          password: _passwordController.text,
+        ),
+      );
+      _isLoading = false;
+      rst.when(
+        success: (data) {
+          if (mounted) context.pop();
+        },
+        failure: (msg, err) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = msg;
+          });
+        },
+      );
+    } else {
+      setState(() {
+        _errorMessage = '用户名或密码错误';
+        _isLoading = false;
+      });
     }
   }
 
@@ -80,8 +91,24 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool isEdited() {
-    return _emailController.text.isNotEmpty ||
-        _passwordController.text.isNotEmpty;
+    return _usernameController.text.isNotEmpty ||
+        _passwordController.text.isNotEmpty ||
+        _isLoading;
+  }
+
+  void _onPopInvokedWithResult(didPop, result) async {
+    if (didPop) {
+      return;
+    }
+    final bool shouldPop = await _onWillPop();
+    if (!shouldPop) return;
+    closeScreen();
+  }
+
+  void closeScreen() {
+    if (mounted) {
+      context.pop();
+    }
   }
 
   @override
@@ -96,15 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Form(
               key: _formKey,
               canPop: !isEdited(),
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) {
-                  return;
-                }
-                final bool shouldPop = await _onWillPop();
-                if (mounted && shouldPop) {
-                  context.pop();
-                }
-              },
+              onPopInvokedWithResult: _onPopInvokedWithResult,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
@@ -112,21 +131,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   Icon(Icons.account_circle, size: 100),
                   SizedBox(height: 40),
                   TextFormField(
-                    controller: _emailController,
+                    controller: _usernameController,
                     decoration: InputDecoration(
-                      labelText: "邮箱",
+                      labelText: "用户名",
                       prefixIcon: Icon(Icons.email),
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return '请输入邮箱';
+                        return '请输入用户名';
                       }
                       if (!RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        r'^[A-Za-z]+[A-Za-z_\*\@\&]*$',
                       ).hasMatch(value)) {
-                        return '请输入有效的邮箱地址';
+                        return '用户名只允许英文大小写和_*@&';
                       }
                       return null;
                     },
@@ -175,7 +194,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(onPressed: () {}, child: Text('忘记密码?')),
-                      TextButton(onPressed: () {}, child: Text('注册账号')),
+                      TextButton(
+                        onPressed: () async {
+                          final rst = await context.push(Routes.register);
+                          if (rst == true) return;
+                          closeScreen();
+                        },
+                        child: Text('注册账号'),
+                      ),
                     ],
                   ),
                 ],

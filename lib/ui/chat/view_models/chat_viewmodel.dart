@@ -7,30 +7,37 @@ import 'dart:math' show min;
 
 import 'package:async/async.dart' show CancelableOperation;
 import 'package:flutter/material.dart';
+import 'package:jing_hong_v4/data/data/auth/auth_repo.dart';
 import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
 import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
 import 'package:jing_hong_v4/data/data/chat/local/chat_model.dart';
+import 'package:jing_hong_v4/data/model/auth/user_info.dart';
 import 'package:jing_hong_v4/data/model/chat/chat_model.dart';
 import 'package:jing_hong_v4/data/model/chat/message.dart';
 import 'package:jing_hong_v4/data/model/chat/session.dart';
-import 'package:jing_hong_v4/ui/chat/view_models.dart/message_viewmodel.dart';
+import 'package:jing_hong_v4/ui/chat/view_models/message_viewmodel.dart';
 import 'package:jing_hong_v4/utils/command.dart';
 import 'package:jing_hong_v4/utils/msg_notifier.dart';
 import 'package:jing_hong_v4/utils/result.dart';
 import 'package:intl/intl.dart';
 
-class ChatViewmodel  {
+class ChatViewmodel {
   // 数据来源提供
   final ChatRepo _chatRepo;
+  final AuthRepo _authRepo;
   // 耗时操作命令，加载历史消息和历史会话
   late Command1<void, Session> loadMessages;
   late Command1<void, ChatModel> loadSessions;
-  late Command1<Session,String?> createSession;
+  late Command1<Session, String?> createSession;
+  late Command0<void> loadUserInfo;
 
-  ChatViewmodel({required ChatRepo chatRepo}) : _chatRepo = chatRepo {
+  ChatViewmodel({required ChatRepo chatRepo, required AuthRepo authRepo})
+    : _chatRepo = chatRepo,
+      _authRepo = authRepo {
     loadMessages = Command1(_loadMessages);
     loadSessions = Command1(_loadSessions)..execute(currentModel.value);
-    createSession = Command1<Session,String?>(_createSession);
+    createSession = Command1<Session, String?>(_createSession);
+    loadUserInfo = Command0(_loadUserInfo)..execute();
   }
 
   // 用于进行消息提示
@@ -40,11 +47,10 @@ class ChatViewmodel  {
 
   ValueNotifier<Session?> currentSession = ValueNotifier(null);
 
+  ValueNotifier<ChatModel> currentModel = ValueNotifier(chatModels[0]);
 
-  ValueNotifier<ChatModel> currentModel = ValueNotifier( chatModels[0]);
- 
-
-
+  // 保留用户信息
+  ValueNotifier<UserInfo?> userInfo = ValueNotifier(null);
 
   List<Session> modelSessions = [];
 
@@ -85,10 +91,9 @@ class ChatViewmodel  {
     if (rst is Failure) msgNotifier.msg = rst.message;
 
     // 加入动画结束后执行
-    Timer(Duration(milliseconds: 1200), (){
-         currentSession.value = newSession;
+    Timer(Duration(milliseconds: 1200), () {
+      currentSession.value = newSession;
     });
-
 
     return Success(newSession);
   }
@@ -145,23 +150,24 @@ class ChatViewmodel  {
   // 5. 停止消息
   void stopSendMessage() {
     _apiOperation?.cancel();
-         _messageViewmodel.stopType();
+    _messageViewmodel.stopType();
   }
 
   // 6. 手动发送消息
   Future<void> sendMessageManually(String message) async {
-    final sendTime =DateFormat('yyyy-MM-dd hh:mm:ss').format(DateTime.now());
+    final sendTime = DateFormat('yyyy-MM-dd hh:mm:ss').format(DateTime.now());
 
     var session = currentSession.value;
-    
+
     if (session == null) {
-      await createSession.execute(message.substring(0, min(message.length, 10)));
+      await createSession.execute(
+        message.substring(0, min(message.length, 10)),
+      );
       var cs = createSession.result as Result<Session>;
-      if(cs is Failure) return;
+      if (cs is Failure) return;
       cs = cs as Success<Session>;
       session = cs.data;
     }
-
 
     final messageToSend = Message(
       id: DateTime.now().millisecondsSinceEpoch,
@@ -180,13 +186,11 @@ class ChatViewmodel  {
 
   // 7. 重新发送消息
   void resendMessage() {
-    if(currentSession.value == null ){
+    if (currentSession.value == null) {
       msgNotifier.msg = "会话未被创建";
-    }
-    else {
+    } else {
       sendMessage(currentSession.value!);
     }
-    
   }
 
   // 8. 加载历史消息
@@ -233,31 +237,54 @@ class ChatViewmodel  {
 
   // 11. 切换模型
   Future<void> switchModel(ChatModel model) async {
-      final rst = _chatRepo.switchModel(model);
-      if(rst is Failure) return;
-      currentModel.value = model;
-      await loadSessions.execute(model);
-      await switchSession(null);
-  
+    final rst = _chatRepo.switchModel(model);
+    if (rst is Failure) return;
+    currentModel.value = model;
+    await loadSessions.execute(model);
+    await switchSession(null);
   }
 
   // 12. 重新加载会话
-  void reloadSessions(){
+  void reloadSessions() {
     loadSessions.execute(currentModel.value);
   }
-  // 13. 重新加载消息
-  void reloadMessages(){
-    if(currentSession.value != null){
-    loadMessages.execute(currentSession.value!);
-    }
 
+  // 13. 重新加载消息
+  void reloadMessages() {
+    if (currentSession.value != null) {
+      loadMessages.execute(currentSession.value!);
+    }
   }
 
   // 14. 页面更新或退出时，停止消息的打印，并保存缓存信息
-  void onViewChange(){
+  void onViewChange() {
     _apiOperation?.cancel();
     handleCachedMessage(saveRunning: true);
     _messageViewmodel.setCachedMessage(null);
   }
 
+  // 登录用户信息模块
+  // 15. 载入用户信息
+  Future<Result<void>> _loadUserInfo() async {
+    final rst = await _authRepo.getUserInfo();
+    rst.when(
+      success: (data) {
+        userInfo.value = data;
+        return Success(null);
+      },
+      failure: (msg, e) {
+        // 如果获取失败清空当前用户信息
+        userInfo.value = null;
+        msgNotifier.msg = msg;
+        return Failure(msg);
+      },
+    );
+    return Success(null);
+  }
+
+  // 16. 登出 （登录的功能放在专门的登录界面）
+  void logout() {
+    _authRepo.logout();
+    loadUserInfo.execute();
+  }
 }

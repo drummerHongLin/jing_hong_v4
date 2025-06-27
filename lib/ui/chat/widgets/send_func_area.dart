@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
-import 'package:jing_hong_v4/ui/chat/view_models.dart/message_viewmodel.dart';
+import 'package:jing_hong_v4/ui/chat/view_models/message_viewmodel.dart';
 
 class SendFuncArea extends StatefulWidget {
   final double height;

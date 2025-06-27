@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
+import 'package:jing_hong_v4/ui/chat/view_models/chat_viewmodel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/message_body.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/model_panel.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/session_panel.dart';

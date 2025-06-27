@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jing_hong_v4/data/model/chat/session.dart';
+import 'package:jing_hong_v4/route/routes.dart';
 import 'package:jing_hong_v4/ui/animation/opacity_animation.dart'
     show OpacityAnimation;
 import 'package:jing_hong_v4/ui/animation/slide_animation.dart'
     show SlideAnimation;
-import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart';
-import 'package:jing_hong_v4/ui/chat/widgets/session_list_item.dart' show SessionListItem;
+import 'package:jing_hong_v4/ui/chat/view_models/chat_viewmodel.dart';
+import 'package:jing_hong_v4/ui/chat/widgets/session_list_item.dart'
+    show SessionListItem;
+import 'package:jing_hong_v4/ui/chat/widgets/user_panel.dart';
 
 class SessionPanel extends StatefulWidget {
   final double height;
@@ -19,17 +25,15 @@ class SessionPanel extends StatefulWidget {
     required this.height,
     required this.width,
     required this.viewmodel,
-    required this.closeDrawer
-  }) ;
+    required this.closeDrawer,
+  });
 
   @override
   State<SessionPanel> createState() => _SessionPanelState();
 }
 
 class _SessionPanelState extends State<SessionPanel> {
-
-
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>() ;
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
@@ -39,15 +43,14 @@ class _SessionPanelState extends State<SessionPanel> {
 
   @override
   void dispose() {
-     widget.viewmodel.createSession.removeListener(addNewSession);
+    widget.viewmodel.createSession.removeListener(addNewSession);
     super.dispose();
   }
 
-
   void addNewSession() {
     // 完成后插入
-    if(widget.viewmodel.createSession.completed){
-         // 默认在第一个位置插入
+    if (widget.viewmodel.createSession.completed) {
+      // 默认在第一个位置插入
       _addItem(0);
     }
   }
@@ -58,7 +61,6 @@ class _SessionPanelState extends State<SessionPanel> {
       duration: const Duration(seconds: 1),
     );
   }
-
 
   Widget _buildListItem(
     Session session,
@@ -74,8 +76,13 @@ class _SessionPanelState extends State<SessionPanel> {
         begin: isForward ? Offset(-50, 0) : Offset.zero,
         end: isForward ? Offset.zero : Offset(-50, 0),
         parent: animation,
-        child:  
-        SessionListItem(isActivated : isActivated,onTap: (){widget.viewmodel.switchSession(session);},session: session,)
+        child: SessionListItem(
+          isActivated: isActivated,
+          onTap: () {
+            widget.viewmodel.switchSession(session);
+          },
+          session: session,
+        ),
       ),
     );
   }
@@ -110,7 +117,10 @@ class _SessionPanelState extends State<SessionPanel> {
                         );
                       },
                     ),
-                    IconButton(onPressed: widget.closeDrawer, icon:  Icon(Icons.vertical_split_outlined, size: 25)),
+                    IconButton(
+                      onPressed: widget.closeDrawer,
+                      icon: Icon(Icons.vertical_split_outlined, size: 25),
+                    ),
                   ],
                 ),
               ),
@@ -141,7 +151,11 @@ class _SessionPanelState extends State<SessionPanel> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   spacing: 8,
                   children: [
-                    Icon(Icons.access_time_outlined, size: 25,color: Colors.white,),
+                    Icon(
+                      Icons.access_time_outlined,
+                      size: 25,
+                      color: Colors.white,
+                    ),
                     Text(
                       '历史会话',
                       style: Theme.of(
@@ -173,15 +187,19 @@ class _SessionPanelState extends State<SessionPanel> {
                     }
                   },
                   child: ListenableBuilder(
-                    listenable: Listenable.merge([widget.viewmodel.currentSession]),
+                    listenable: Listenable.merge([
+                      widget.viewmodel.currentSession,
+                    ]),
                     builder:
                         (_, _) => Padding(
                           padding: EdgeInsets.only(left: 41),
                           child: AnimatedList(
                             key: _listKey,
-                            initialItemCount: widget.viewmodel.modelSessions.length,
+                            initialItemCount:
+                                widget.viewmodel.modelSessions.length,
                             itemBuilder: (context, index, a) {
-                              if (index >= widget.viewmodel.modelSessions.length) {
+                              if (index >=
+                                  widget.viewmodel.modelSessions.length) {
                                 return SizedBox.shrink();
                               } else {
                                 return _buildListItem(
@@ -189,7 +207,10 @@ class _SessionPanelState extends State<SessionPanel> {
                                   a,
                                   true,
                                   isActivated:
-                                      widget.viewmodel.modelSessions[index].id ==
+                                      widget
+                                          .viewmodel
+                                          .modelSessions[index]
+                                          .id ==
                                       widget.viewmodel.currentSession.value?.id,
                                 );
                               }
@@ -197,6 +218,59 @@ class _SessionPanelState extends State<SessionPanel> {
                           ),
                         ),
                   ),
+                ),
+              ),
+              // 登录信息
+              ListenableBuilder(
+                listenable: widget.viewmodel.loadUserInfo,
+                builder: (ctx, child) {
+                  if (widget.viewmodel.loadUserInfo.running) {
+                    return SizedBox(
+                      height: 40,
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return child!;
+                },
+                child: ValueListenableBuilder(
+                  valueListenable: widget.viewmodel.userInfo,
+                  builder: (ctx, userInfo, c) {
+                    final avatarUrl =
+                        userInfo == null
+                            ? 'https://ai-tang.oss-cn-shanghai.aliyuncs.com/jinghong/%E6%9C%AA%E7%99%BB%E5%BD%95.png'
+                            : 'http://localhost:8080/v1/users/${userInfo.username}/get-avatar';
+                    final nickName = userInfo?.nickname ?? '未登录';
+                    final operationIcon =
+                        userInfo == null
+                            ? Icons.login_outlined
+                            : Icons.logout_outlined;
+                    final operation =
+                        userInfo == null
+                            ? () {
+                              context
+                                  .push(Routes.login)
+                                  .then(
+                                    (_) =>
+                                        widget.viewmodel.loadUserInfo.execute(),
+                                  );
+                            }
+                            : widget.viewmodel.logout;
+
+                    final headers =
+                        userInfo == null
+                            ? null
+                            : <String, String>{
+                              "Authorization": "Bearer ${userInfo.token}",
+                            };
+
+                    return UserPanel(
+                      avatarUrl: avatarUrl,
+                      nickname: nickName,
+                      operationIcon: operationIcon,
+                      operation: operation,
+                      headers: headers,
+                    );
+                  },
                 ),
               ),
             ],

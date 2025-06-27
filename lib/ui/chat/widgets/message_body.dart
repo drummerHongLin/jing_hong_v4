@@ -1,7 +1,7 @@
 import 'dart:math' show max;
 
 import 'package:flutter/material.dart';
-import 'package:jing_hong_v4/ui/chat/view_models.dart/chat_viewmodel.dart'
+import 'package:jing_hong_v4/ui/chat/view_models/chat_viewmodel.dart'
     show ChatViewmodel;
 import 'package:jing_hong_v4/ui/chat/widgets/message_list.dart';
 import 'package:jing_hong_v4/ui/chat/widgets/send_func_area.dart';
@@ -14,7 +14,7 @@ class MessageBody extends StatefulWidget {
   final ChatViewmodel viewmodel;
   final VoidCallback openDrawer;
   final VoidCallback openModelSelect;
-    final VoidCallback closePanel;
+  final VoidCallback closePanel;
   final GlobalKey iconKey;
 
   const MessageBody({
@@ -26,7 +26,8 @@ class MessageBody extends StatefulWidget {
     required this.openDrawer,
     required this.isWide,
     required this.openModelSelect,
-    required this.iconKey, required this.closePanel,
+    required this.iconKey,
+    required this.closePanel,
   });
 
   @override
@@ -67,7 +68,9 @@ class _MessageBodyState extends State<MessageBody> {
                       builder: (context, s, c) {
                         return Text(
                           s?.title ?? "",
-                          style: Theme.of(context).textTheme.labelMedium,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineSmall?.copyWith(fontSize: 20),
                         );
                       },
                     ),
@@ -107,7 +110,9 @@ class _MessageBodyState extends State<MessageBody> {
                       (c, cc) => Padding(
                         padding:
                             widget.isWide
-                                ? EdgeInsets.symmetric(horizontal: widget.width / 6)
+                                ? EdgeInsets.symmetric(
+                                  horizontal: widget.width / 6,
+                                )
                                 : EdgeInsets.zero,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -116,11 +121,21 @@ class _MessageBodyState extends State<MessageBody> {
                           children: [
                             MessageList(
                               sendedMessages:
-                                  widget.viewmodel.messageViewmodel.sendedMessages,
+                                  widget
+                                      .viewmodel
+                                      .messageViewmodel
+                                      .sendedMessages,
                               cachedMessage:
-                                  widget.viewmodel.messageViewmodel.cachedMessage,
-                              maxWidth: widget.width * (widget.isWide? 1/2:2/3),
-                              maxHeight: widget.height * (widget.isWide? 1/2:2/3),
+                                  widget
+                                      .viewmodel
+                                      .messageViewmodel
+                                      .cachedMessage,
+                              maxWidth:
+                                  widget.width *
+                                  (widget.isWide ? 1 / 2 : 2 / 3),
+                              maxHeight:
+                                  widget.height *
+                                  (widget.isWide ? 1 / 2 : 2 / 3),
                               onResend: widget.viewmodel.resendMessage,
                               onStop: widget.viewmodel.stopSendMessage,
                             ),

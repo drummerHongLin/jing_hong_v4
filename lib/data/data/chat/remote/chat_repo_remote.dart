@@ -7,15 +7,15 @@ import 'package:jing_hong_v4/data/model/chat/message.dart';
 import 'package:jing_hong_v4/data/model/chat/session.dart';
 import 'package:jing_hong_v4/service/api/chat/chat_client.dart' show ChatClient;
 import 'package:jing_hong_v4/service/api/chat/model/chat_api_data.dart';
-import 'package:jing_hong_v4/service/db/chat/chat_db.dart';
+import 'package:jing_hong_v4/service/db/sqlite_db.dart';
 import 'package:jing_hong_v4/utils/result.dart';
 
 class ChatRepoRemote implements ChatRepo {
   final ChatClient _chapClient;
-  final ChatDb _chatDb;
+  final SqliteDb _chatDb;
 
   // 在provider中实现依赖注入
-  ChatRepoRemote({required ChatClient chapClient, required ChatDb chatDb})
+  ChatRepoRemote({required ChatClient chapClient, required SqliteDb chatDb})
     : _chapClient = chapClient,
       _chatDb = chatDb;
 

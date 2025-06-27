@@ -5,11 +5,11 @@ import 'package:jing_hong_v4/data/model/chat/session.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class ChatDb {
+class SqliteDb {
   // 创建单例对象
-  static final ChatDb _instance = ChatDb._internal();
-  factory ChatDb() => _instance;
-  ChatDb._internal();
+  static final SqliteDb _instance = SqliteDb._internal();
+  factory SqliteDb() => _instance;
+  SqliteDb._internal();
 
   // 获取数据库对象
   static Database? _database;

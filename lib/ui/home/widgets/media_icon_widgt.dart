@@ -42,7 +42,7 @@ class _MediaIconWidgtState extends State<MediaIconWidgt> {
   Widget build(BuildContext context) {
     return InkWell(
       onHover: (value) => _onHover(value),
-      onTap: () {context.push("/SocialMedia/1");},
+      onTap: () {context.push("/socialMedia/1");},
       child: Container(
         width: widget.size,
         height: widget.size,
