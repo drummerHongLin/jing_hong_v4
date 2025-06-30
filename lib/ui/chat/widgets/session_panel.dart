@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -263,12 +261,19 @@ class _SessionPanelState extends State<SessionPanel> {
                               "Authorization": "Bearer ${userInfo.token}",
                             };
 
+                    profileWindow() {
+                      context
+                          .push(Routes.profile)
+                          .then((_) => widget.viewmodel.loadUserInfo.execute());
+                    }
+
                     return UserPanel(
                       avatarUrl: avatarUrl,
                       nickname: nickName,
                       operationIcon: operationIcon,
                       operation: operation,
                       headers: headers,
+                      profileWindow: profileWindow,
                     );
                   },
                 ),

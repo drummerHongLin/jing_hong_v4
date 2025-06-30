@@ -25,6 +25,10 @@ dependencies:
   sqflite_common_ffi_web: ^1.0.0 # https://github.com/tekartik/sqflite/tree/master/packages_web/sqflite_common_ffi_web#setup-binaries
   shared_preferences: ^2.5.3
 
+  image_picker: ^1.1.2
+  image_picker_for_web: ^3.0.6
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

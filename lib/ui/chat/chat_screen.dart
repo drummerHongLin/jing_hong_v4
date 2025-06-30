@@ -20,6 +20,7 @@ class _ChatScreenState extends State<ChatScreen>
   bool showModelSelect = false;
   Offset modelSelectOffset = Offset.zero;
   bool isWide = false;
+
   final GlobalKey iconKey = GlobalKey();
   final GlobalKey containerKey = GlobalKey();
 
@@ -34,6 +35,7 @@ class _ChatScreenState extends State<ChatScreen>
       duration: Duration(milliseconds: 500),
     );
     animation = Tween<double>(begin: 0, end: 1).animate(controller);
+    widget.viewmodel.msgNotifier.addListener(showSnackBar);
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -62,6 +64,7 @@ class _ChatScreenState extends State<ChatScreen>
   void dispose() {
     widget.viewmodel.onViewChange();
     controller.dispose();
+    widget.viewmodel.msgNotifier.removeListener(showSnackBar);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -112,6 +115,8 @@ class _ChatScreenState extends State<ChatScreen>
     });
   }
 
+
+
   void getIconPosition() {
     RenderBox? renderBox =
         iconKey.currentContext?.findRenderObject() as RenderBox?;
@@ -134,6 +139,15 @@ class _ChatScreenState extends State<ChatScreen>
     if (showModelSelect) {
       closeModelSelect();
     }
+  }
+
+  void showSnackBar({String? msg}){
+
+    final content = msg??widget.viewmodel.msgNotifier.msg;
+
+    final snackBar = SnackBar(content: Text(content??""));
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override

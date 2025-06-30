@@ -10,7 +10,6 @@ import 'package:jing_hong_v4/service/db/sqlite_db.dart';
 import 'package:jing_hong_v4/service/preference/shared_preferences_servicec.dart';
 import 'package:jing_hong_v4/ui/auth/auth_viewmodel.dart';
 import 'package:jing_hong_v4/ui/chat/view_models/chat_viewmodel.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 

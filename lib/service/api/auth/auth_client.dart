@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io' show File;
 
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:jing_hong_v4/service/api/auth/model/email_verification/email_data.dart';
 import 'package:jing_hong_v4/service/api/auth/model/login/login_data.dart';
 
@@ -63,5 +65,18 @@ class AuthClient {
       data: jsonEncode(request),
     );
     return EmailVerifiedResponse.fromJson(res.data);
+  }
+
+  Future<void> setAvatar(String username, String token, XFile file) async {
+    final f = await file.readAsBytes();
+    final formData = FormData.fromMap({
+      'file':  MultipartFile.fromBytes(f,filename: file.name),
+    });
+
+    await client.post(
+      "/v1/users/$username/set-avatar",
+      data: formData,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
   }
 }
