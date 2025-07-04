@@ -3,10 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:jing_hong_v4/data/data/chat/chat_repo.dart';
-import 'package:jing_hong_v4/data/data/chat/local/chat_repo_local.dart';
-import 'package:jing_hong_v4/ui/chat/chat_screen.dart' show ChatScreen;
-import 'package:jing_hong_v4/ui/chat/view_models/chat_viewmodel.dart';
 
 
 /// Flutter code sample for [AnimatedSlide].

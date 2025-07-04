@@ -126,10 +126,10 @@ class SelfIntroduction extends StatelessWidget {
 
   List<Widget> _generateMediaIcons() {
     return [
-      for (var i in mediaIcons)
+      for (int i =0; i <mediaIcons.length; i++)
         OpacityAnimation(
             parent: animation1,
-            child:MediaIconWidgt(mediaIcon: i, size: isWide ? 60 : 40)),
+            child:MediaIconWidgt(mediaIcon: mediaIcons[i], size: isWide ? 60 : 40, index: i,)),
     ];
   }
 }

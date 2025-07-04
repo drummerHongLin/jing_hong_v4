@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jing_hong_v4/data/model/auth/user_info.dart';
 import 'package:jing_hong_v4/ui/auth/auth_viewmodel.dart';
 import 'package:jing_hong_v4/ui/theme/colors.dart';
 

@@ -85,7 +85,7 @@ class _CustomShellState extends State<CustomShell>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isWide = size.width / size.height > 1;
+    final isWide = size.width / size.height > 1 && size.height >= 600;
     return SafeArea(
       child: Scaffold(
         body: ScreenSizeNotifier(

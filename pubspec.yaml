@@ -27,6 +27,9 @@ dependencies:
 
   image_picker: ^1.1.2
   image_picker_for_web: ^3.0.6
+  uuid: ^4.5.1
+  permission_handler: ^12.0.1
+  path_provider: ^2.1.5
 
 
 dev_dependencies:
@@ -59,6 +62,11 @@ flutter:
     - assets/images/deepseek.svg
     - assets/images/robot.svg
     - assets/images/Naruto.svg
+    - assets/images/qr/qr-code-bytedance.jpg
+    - assets/images/qr/qr-code-email.png
+    - assets/images/qr/qr-code-github.png
+    - assets/images/qr/qr-code-wechat.jpg
+    - assets/images/qr/文件不存在提示.png
   fonts:
     - family: Poppins
       fonts:

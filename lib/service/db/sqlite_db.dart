@@ -2,10 +2,11 @@ import 'package:flutter/material.dart' show WidgetsFlutterBinding;
 import 'package:jing_hong_v4/data/model/chat/chat_model.dart';
 import 'package:jing_hong_v4/data/model/chat/message.dart';
 import 'package:jing_hong_v4/data/model/chat/session.dart';
+import 'package:jing_hong_v4/service/db/chat_db.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class SqliteDb {
+class SqliteDb extends ChatDb {
   // 创建单例对象
   static final SqliteDb _instance = SqliteDb._internal();
   factory SqliteDb() => _instance;
@@ -33,23 +34,24 @@ class SqliteDb {
     // 创建会话表
     await db.execute('''
       CREATE TABLE sessions(
-        id INTEGER PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
-        model TEXT NOT NULL
+        model TEXT NOT NULL,
+        createTime TEXT NOT NULL
       )
     ''');
 
     // 创建消息表
     await db.execute('''
       CREATE TABLE messages(
-        id INTEGER PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         mId INTEGER NOT NULL,
         content TEXT NOT NULL,
         role TEXT NOT NULL,
         state TEXT NOT NULL,
         showingContent TEXT NOT NULL,
         sendTime TEXT NOT NULL,
-        sessionId INTEGER NOT NULL,
+        sessionId TEXT NOT NULL,
         FOREIGN KEY (sessionId) REFERENCES sessions (id)
       )
     ''');
@@ -58,16 +60,24 @@ class SqliteDb {
   // 数据库的增删改查
   // 1. 插入会话
 
-  Future<int> insertSession(Session session) async {
+  @override
+  Future<int> insertSession(List<Session> session) async {
     final db = await database;
-    return await db.insert(
-      'sessions',
-      session.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final batch = db.batch();
+    
+    for (var e in session) {
+      batch.insert('sessions', e.toMap(),conflictAlgorithm: ConflictAlgorithm.replace,);
+    }
+
+   await batch.commit();
+    
+    
+
+    return session.length;
   }
 
   // 2. 根据model获取session列表
+  @override
   Future<List<Session>> getSessionsByModel(ChatModel model) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -79,23 +89,35 @@ class SqliteDb {
   }
 
   // 3. 删除session
-  Future<void> deleteSession(int id) async {
+  @override
+  Future<void> deleteSession(String id) async {
     final db = await database;
     await db.delete('sessions', where: 'id = ?', whereArgs: [id]);
+    await deleteMessagesBySessionId(id);
   }
 
   // 4. 插入消息
-  Future<int> insertMessage(Message message) async {
+  @override
+  Future<int> insertMessage(List<Message>  message) async {
     final db = await database;
-    return await db.insert(
+
+     final batch = db.batch();
+
+     for (var m in message) {
+        batch.insert(
       'messages',
-      message.toMap(),
+      m.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+
+    await batch.commit();
+
+     }return message.length;
   }
 
   // 5. 通过会话id获取消息
-  Future<List<Message>> getMessageBySessionId(int sessionId) async {
+  @override
+  Future<List<Message>> getMessageBySessionId(String sessionId) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'messages',
@@ -106,16 +128,42 @@ class SqliteDb {
   }
 
   // 6. 通过会话id删除消息
-  Future<void> deleteMessagesBySessionId(int sessionId) async {
+
+  Future<void> deleteMessagesBySessionId(String sessionId) async {
     final db = await database;
     await db.delete('messages', where: 'sessionId = ?', whereArgs: [sessionId]);
   }
 
   // 关闭数据库链接
+  @override
   Future<void> close() async {
     if(_database != null){
       await _database!.close();
     }
+  }
+
+  Future<void> truncate() async {
+     final db = await database;
+    await db.rawQuery("DELETE FROM sessions");
+    await db.rawQuery("DELETE FROM messages");
+  }
+  
+  @override
+  Future<List<Message>> getAllMessages() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'messages',
+    );
+    return List.generate(maps.length, (i) => Message.fromMap(maps[i]));
+  }
+  
+  @override
+  Future<List<Session>> getAllSessions() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'sessions',
+    );
+    return List.generate(maps.length, (i) => Session.fromMap(maps[i]));
   }
 
 }

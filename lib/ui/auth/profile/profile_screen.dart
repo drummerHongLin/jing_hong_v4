@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         CircleNetImg(
           imgUrl:
-              'http://localhost:8080/v1/users/${userInfo.username}/get-avatar',
+              'https://www.honghouse.cn/api/v1/users/${userInfo.username}/get-avatar',
           imgSize: Size(200, 200),
           headers: <String, String>{
             "Authorization": "Bearer ${userInfo.token}",

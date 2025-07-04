@@ -8,4 +8,4 @@ final mediaIcons = <MediaIcon>[
   MediaIcon(icon: Icons.email_rounded, mediaCode: "", desc: "Email"),
 ];
 
-final cvInfo = CvInfo(cvName: "Data Analytics", cvUrl: "");
+final cvInfo = CvInfo(cvName: "Data Analytics", cvUrl: "https://udo-tang.oss-cn-beijing.aliyuncs.com/%E5%94%90%E9%B8%BF%E6%9E%97-%E6%95%B0%E6%8D%AE%E5%BC%80%E5%8F%91.pdf");

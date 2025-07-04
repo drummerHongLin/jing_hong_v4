@@ -5,6 +5,7 @@ import 'package:jing_hong_v4/data/model/auth/user_info.dart';
 import 'package:jing_hong_v4/service/api/auth/auth_client.dart';
 import 'package:jing_hong_v4/service/api/auth/model/email_verification/email_data.dart';
 import 'package:jing_hong_v4/service/api/auth/model/login/login_data.dart';
+import 'package:jing_hong_v4/service/db/remote_db.dart';
 import 'package:jing_hong_v4/service/preference/model/token_info.dart';
 import 'package:jing_hong_v4/service/preference/shared_preferences_servicec.dart';
 import 'package:jing_hong_v4/utils/result.dart';
@@ -12,13 +13,14 @@ import 'package:jing_hong_v4/utils/result.dart';
 class AuthRepoRemote extends AuthRepo {
   final SharedPreferencesService _preferencesService;
   final AuthClient _authClient;
+  final RemoteDb _remoteDb;
   TokenInfo? _token;
 
   @override
   TokenInfo? get token {
     final v = _token;
     if (v == null) return null;
-    final now = DateTime.now().millisecondsSinceEpoch/1000;
+    final now = DateTime.now().millisecondsSinceEpoch / 1000;
     if (v.expiredAt < now) {
       logout();
       return null;
@@ -29,8 +31,10 @@ class AuthRepoRemote extends AuthRepo {
   AuthRepoRemote({
     required SharedPreferencesService preferencesService,
     required AuthClient authClient,
+    required RemoteDb remoteDb,
   }) : _preferencesService = preferencesService,
-       _authClient = authClient;
+       _authClient = authClient,
+       _remoteDb = remoteDb;
 
   @override
   Future<Result<void>> changePassword(
@@ -46,7 +50,7 @@ class AuthRepoRemote extends AuthRepo {
       await _authClient.changePassword(
         ChangePasswordRequest(newPassword: newPassword),
         username,
-         rst.token,
+        rst.token,
       );
       _token = TokenInfo(value: rst.token, expiredAt: rst.expiredAt);
       _preferencesService.saveToken(_token);
@@ -71,6 +75,9 @@ class AuthRepoRemote extends AuthRepo {
       );
       _token = TokenInfo(value: rst1.token, expiredAt: rst1.expiredAt);
       _preferencesService.saveToken(_token);
+      _remoteDb.afterLogin(<String, String>{
+        "Authorization": "Bearer ${rst1.token}",
+      });
       return Success(null);
     } on DioException catch (e) {
       if (e.response?.data != null) {
@@ -134,13 +141,16 @@ class AuthRepoRemote extends AuthRepo {
   Future<Result<void>> _fetchToken() async {
     final tokenInfo = await _preferencesService.fetchToken();
     if (tokenInfo == null) return Failure("token不存在!");
-    final now = DateTime.now().millisecondsSinceEpoch;
+    final now = DateTime.now().millisecondsSinceEpoch / 1000;
     if (tokenInfo.expiredAt < now) {
       // 清空缓存记录
-      await _preferencesService.saveToken(null);
+      logout();
       return Failure("token已过期");
     }
     _token = tokenInfo;
+    _remoteDb.afterLogin(<String, String>{
+      "Authorization": "Bearer ${tokenInfo.value}",
+    });
     return Success(null);
   }
 
@@ -154,17 +164,15 @@ class AuthRepoRemote extends AuthRepo {
       }
       // 如果是已登录状态，那么token一定是有的
       final rst = await _authClient.getUser(_token!.value);
-      final u =  UserInfo(
-          username: rst.username,
-          password: rst.password,
-          nickname: rst.nickname,
-          avatarUrl: rst.avatarUrl,
-          email: rst.email,
-          token: _token!.value,
-        );
-      return Success(
-        u
+      final u = UserInfo(
+        username: rst.username,
+        password: rst.password,
+        nickname: rst.nickname,
+        avatarUrl: rst.avatarUrl,
+        email: rst.email,
+        token: _token!.value,
       );
+      return Success(u);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         // 如果是认证信息失败，那么清空本地的token留存
@@ -182,6 +190,7 @@ class AuthRepoRemote extends AuthRepo {
     try {
       _token = null;
       _preferencesService.saveToken(null);
+      _remoteDb.afterLogout();
       return Success(null);
     } on Exception catch (_) {
       return Failure("登出失败");
@@ -209,8 +218,8 @@ class AuthRepoRemote extends AuthRepo {
 
   @override
   Future<Result<void>> setAvatar(String username, XFile file) async {
-    try{
-            final v = _token;
+    try {
+      final v = _token;
       if (v == null) {
         final rst = await _fetchToken();
         if (rst is Failure) return Failure("未登录");
@@ -218,9 +227,7 @@ class AuthRepoRemote extends AuthRepo {
 
       await _authClient.setAvatar(username, v!.value, file);
       return Success(null);
-
-    }
-   on DioException catch (e) {
+    } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         // 如果是认证信息失败，那么清空本地的token留存
         logout();
@@ -230,13 +237,14 @@ class AuthRepoRemote extends AuthRepo {
       // 其他能不错误
       return Failure("服务错误：", e);
     }
-  
-}
+  }
 
   @override
-  Future<Result<void>> changePasswordOnLogin(String newPassword,String username) async {
-      try {
-
+  Future<Result<void>> changePasswordOnLogin(
+    String newPassword,
+    String username,
+  ) async {
+    try {
       final v = _token;
       if (v == null) {
         final rst = await _fetchToken();
@@ -246,9 +254,8 @@ class AuthRepoRemote extends AuthRepo {
       await _authClient.changePassword(
         ChangePasswordRequest(newPassword: newPassword),
         username,
-        v!.value
+        v!.value,
       );
-
 
       return Success(null);
     } on DioException catch (e) {
@@ -261,7 +268,4 @@ class AuthRepoRemote extends AuthRepo {
       return Failure("修改密码失败!", e);
     }
   }
-
-
-
 }

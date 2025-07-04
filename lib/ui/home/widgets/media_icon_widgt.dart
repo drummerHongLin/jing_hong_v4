@@ -6,11 +6,13 @@ import 'package:jing_hong_v4/ui/theme/colors.dart';
 class MediaIconWidgt extends StatefulWidget {
   final MediaIcon mediaIcon;
   final double size;
+  final int index;
 
   const MediaIconWidgt({
     super.key,
     required this.mediaIcon,
     required this.size,
+    required this.index
   });
 
   @override
@@ -42,7 +44,7 @@ class _MediaIconWidgtState extends State<MediaIconWidgt> {
   Widget build(BuildContext context) {
     return InkWell(
       onHover: (value) => _onHover(value),
-      onTap: () {context.push("/socialMedia/1");},
+      onTap: () {context.push("/socialMedia/${widget.index}");},
       child: Container(
         width: widget.size,
         height: widget.size,

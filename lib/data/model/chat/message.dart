@@ -1,14 +1,15 @@
 import 'package:jing_hong_v4/data/data/chat/local/basic_info.dart';
+import 'package:jing_hong_v4/utils/tools.dart';
 
 class Message {
-  final int id;
+  final String id;
   final int mId;
   final String content;
   final Role role;
   MsState state;
   String showingContent;
   final String sendTime;
-  final int sId;
+  final String sId;
 
   Message({
     required this.id,
@@ -21,9 +22,9 @@ class Message {
     required this.sId,
   });
 
-  factory Message.ready(int sid) {
+  factory Message.ready(String sid) {
     return Message(
-      id: -1,
+      id: Tools.generateUuid("message", "占位消息"),
       mId: -1,
       content: '...',
       role: Role.assistant,
@@ -50,9 +51,9 @@ class Message {
     );
   }
 
-  factory Message.manuallyStopped(String sendTime, int sId) {
+  factory Message.manuallyStopped(String sendTime, String sId) {
     return Message(
-      id: -1,
+      id: Tools.generateUuid("message", "中止消息"),
       mId: -1,
       content: "消息停止发送！",
       role: Role.assistant,

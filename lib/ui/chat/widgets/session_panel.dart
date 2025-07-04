@@ -236,7 +236,7 @@ class _SessionPanelState extends State<SessionPanel> {
                     final avatarUrl =
                         userInfo == null
                             ? 'https://ai-tang.oss-cn-shanghai.aliyuncs.com/jinghong/%E6%9C%AA%E7%99%BB%E5%BD%95.png'
-                            : 'http://localhost:8080/v1/users/${userInfo.username}/get-avatar';
+                            : 'https://www.honghouse.cn/api/v1/users/${userInfo.username}/get-avatar';
                     final nickName = userInfo?.nickname ?? '未登录';
                     final operationIcon =
                         userInfo == null

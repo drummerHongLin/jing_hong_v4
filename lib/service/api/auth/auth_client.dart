@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io' show File;
 
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,7 +9,7 @@ class AuthClient {
   final Dio client;
 
   AuthClient({String? baseUrl})
-    : client = Dio(BaseOptions(baseUrl: baseUrl ?? "http://localhost:8080"));
+    : client = Dio(BaseOptions(baseUrl: baseUrl ?? "https://www.honghouse.cn/api/"));
 
   Future<LoginResponse> login(LoginRequest loginRequest) async {
     final response = await client.post(

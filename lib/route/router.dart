@@ -14,6 +14,7 @@ import 'package:jing_hong_v4/ui/auth/register/register_screen.dart';
 import 'package:jing_hong_v4/ui/chat/chat_screen.dart';
 import 'package:jing_hong_v4/ui/home/home_screen.dart';
 import 'package:jing_hong_v4/ui/shell/custom_shell.dart';
+import 'package:jing_hong_v4/ui/socialmedia/social_qr_panel.dart';
 import 'package:provider/provider.dart';
 
 // 用于弹出额外信息卡
@@ -105,11 +106,19 @@ GoRouter router() => GoRouter(
             // 放在这可以共用上级的重定向
             GoRoute(
               path: "/set-avatar",
-              pageBuilder: (context, state) => popPage(state.pageKey, AddAvatar(viewmodel: context.read())),
+              pageBuilder:
+                  (context, state) => popPage(
+                    state.pageKey,
+                    AddAvatar(viewmodel: context.read()),
+                  ),
             ),
-                        GoRoute(
+            GoRoute(
               path: "/change-password",
-              pageBuilder: (context, state) => popPage(state.pageKey, ChangePassword(viewmodel: context.read())),
+              pageBuilder:
+                  (context, state) => popPage(
+                    state.pageKey,
+                    ChangePassword(viewmodel: context.read()),
+                  ),
             ),
           ],
         ),
@@ -117,7 +126,13 @@ GoRouter router() => GoRouter(
     ),
     GoRoute(
       path: "/socialMedia/:id",
-      pageBuilder: (context, state) => popPage(state.pageKey, Placeholder()),
+      pageBuilder:
+          (context, state) => popPage(
+            state.pageKey,
+            SocialQrPanel(
+              index: int.tryParse(state.pathParameters['id']!) ?? -1,
+            ),
+          ),
     ),
   ],
 );

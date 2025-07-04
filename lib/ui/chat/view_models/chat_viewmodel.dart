@@ -20,6 +20,7 @@ import 'package:jing_hong_v4/utils/command.dart';
 import 'package:jing_hong_v4/utils/msg_notifier.dart';
 import 'package:jing_hong_v4/utils/result.dart';
 import 'package:intl/intl.dart';
+import 'package:jing_hong_v4/utils/tools.dart';
 
 class ChatViewmodel {
   // 数据来源提供
@@ -78,10 +79,12 @@ class ChatViewmodel {
 
   // 1. 创建会话
   Future<Result<Session>> _createSession(String? title) async {
+    final createTime = DateFormat('yyyy-MM-dd hh:mm:ss').format(DateTime.now());
     final newSession = Session(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: Tools.generateUuid("session", userInfo.value?.username),
       title: title ?? '新建会话',
       model: currentModel.value.name,
+      createTime: createTime,
     );
 
     modelSessions.insert(0, newSession);
@@ -126,6 +129,7 @@ class ChatViewmodel {
       _chatRepo.getMessageFromApi(
         _messageViewmodel.sendedMessages,
         currentModel.value,
+        userInfo.value?.username,
       ),
       onCancel: () {
         _messageViewmodel.setCachedMessage(
@@ -170,7 +174,7 @@ class ChatViewmodel {
     }
 
     final messageToSend = Message(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: Tools.generateUuid("message", userInfo.value?.username),
       mId: _messageViewmodel.sendedMessages.length,
       content: message,
       role: Role.user,
@@ -270,16 +274,21 @@ class ChatViewmodel {
     rst.when(
       success: (data) {
         userInfo.value = data;
-        return Success(null);
       },
       failure: (msg, e) {
         // 如果获取失败清空当前用户信息
         userInfo.value = null;
         msgNotifier.msg = msg;
-        return Failure(msg);
       },
     );
-    return Success(null);
+    if (rst is Success) {
+      // 载入用户信息后，加载数据
+      await _chatRepo.transferData();
+      loadSessions.execute(currentModel.value);
+      return Success(null);
+    } else {
+      return Failure("登录失败");
+    }
   }
 
   // 16. 登出 （登录的功能放在专门的登录界面）

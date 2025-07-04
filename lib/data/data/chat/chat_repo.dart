@@ -23,7 +23,10 @@ abstract class ChatRepo {
   Future<Result<Message>> getMessageFromApi(
     List<Message> messages,
     ChatModel model,
+    String? username
   );
 
     Result<bool> switchModel(ChatModel model);
+Future<Result<void>> transferData();
+
 }
