@@ -104,7 +104,7 @@ class _CustomShellState extends State<CustomShell>
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: isWide ? 20 : 0,
-        horizontal: isWide ? 100 : 20,
+        horizontal: isWide ? 100 : 0,
       ),
       child: Column(
         children: [

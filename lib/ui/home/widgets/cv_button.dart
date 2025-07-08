@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jing_hong_v4/data/local/home/model.dart';
 import 'package:jing_hong_v4/ui/theme/colors.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:path_provider/path_provider.dart';
@@ -45,20 +46,24 @@ class CvButton extends StatelessWidget {
     String savePath;
     try {
       if (!kIsWeb) {
-        final status = await Permission.storage.request();
+        final status = await Permission.manageExternalStorage.request();
         if (!status.isGranted) {
           return "Permission denied";
         }
         final dir = await getApplicationDocumentsDirectory();
         savePath = '${dir.path}/cv.pdf';
         final dio = Dio();
-        await dio.download(
+        final resp = await dio.download(
           cvInfo.cvUrl, // 替换为你的文件URL
           savePath,
           onReceiveProgress: (received, total) {
             if (total == -1) return;
           },
         );
+        if(resp.statusCode == 200){
+          OpenFilex.open(savePath);
+        }
+        
         return "";
       } else {
         // Web download

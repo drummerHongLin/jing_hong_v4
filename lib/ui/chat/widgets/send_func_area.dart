@@ -65,9 +65,7 @@ class _SendFuncAreaState extends State<SendFuncArea> {
             child: ListenableBuilder(
               listenable: widget.viewmodel,
               builder: (context, child) {
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 8),
-                  child: Material(
+                return  Material(
                     type: MaterialType.transparency,
                     child: TextField(
                       controller: controller,
@@ -91,8 +89,7 @@ class _SendFuncAreaState extends State<SendFuncArea> {
                       },
                       cursorColor: Colors.grey,
                     ),
-                  ),
-                );
+                  );
               },
             ),
           ),

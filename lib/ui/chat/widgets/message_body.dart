@@ -66,11 +66,15 @@ class _MessageBodyState extends State<MessageBody> {
                     ValueListenableBuilder(
                       valueListenable: widget.viewmodel.currentSession,
                       builder: (context, s, c) {
-                        return Text(
-                          s?.title ?? "",
-                          style: Theme.of(
-                            context,
-                          ).textTheme.headlineSmall?.copyWith(fontSize: 20),
+                        return ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: widget.width/2),
+                          child: Text(
+                            s?.title ?? "",
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.headlineSmall?.copyWith(fontSize: 20),
+                          ),
                         );
                       },
                     ),

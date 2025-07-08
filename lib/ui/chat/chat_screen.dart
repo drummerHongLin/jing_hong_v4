@@ -73,7 +73,7 @@ class _ChatScreenState extends State<ChatScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // 在应用退出时保存相关信息
     if (state == AppLifecycleState.detached ||
-        state == AppLifecycleState.hidden) {
+        state == AppLifecycleState.hidden || state == AppLifecycleState.paused) {
       widget.viewmodel.onViewChange();
     }
 

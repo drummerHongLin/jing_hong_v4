@@ -86,13 +86,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<Widget> _generateHomeItems(double minSize, bool isWide) {
     return [
       Expanded(
+            flex: isWide? 1:2,
         child: HomeAvatar(
           animation1: _slideAnimationController,
           animation2: _bounceAnimationController,
           avatarSize: minSize / 2,
         ),
+    
       ),
       Expanded(
+            flex: isWide? 1:3,
         child: SelfIntroduction(
           titles: [],
           mediaIcons: mediaIcons,
